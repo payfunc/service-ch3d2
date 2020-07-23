@@ -1,14 +1,14 @@
 {
- "name": "template-library",
- "version": "0.0.0",
- "description": "Template for NPM library",
+ "name": "@payfunc/service-ch3d2",
+ "version": "0.0.1",
+ "description": "Service library for using emv3d2.",
  "author": "PayFunc",
  "license": "MIT",
- "repository": "https://github.com/payfunc/template-library",
+ "repository": "https://github.com/payfunc/service-ch3d2",
  "bugs": {
-  "url": "https://github.com/payfunc/template-library/issues"
+  "url": "https://github.com/payfunc/service-ch3d2/issues"
  },
- "homepage": "https://payfunc.com/open-source/template-library",
+ "homepage": "https://payfunc.com/open-source/service-ch3d2",
  "private": false,
  "main": "dist/index.js",
  "typings": "dist/index.d.ts",
@@ -47,12 +47,22 @@
   "prepare": "npm run build",
   "clean": "rm -rf dist node_modules coverage"
  },
- "dependencies": {},
+ "dependencies": {
+  "@cardfunc/model": "0.0.69",
+  "@payfunc/model": "0.1.79",
+  "authly": "0.0.40",
+  "gracely": "0.0.33",
+  "isoly": "0.0.15",
+  "form-urlencoded": "^4.2.1",
+  "node-fetch": "^2.6.0"
+ },
  "devDependencies": {
+  "@types/form-urlencoded": "^2.0.1",
   "@types/jest": "^26.0.0",
   "@types/node": "^14.0.13",
+  "@types/node-fetch": "^2.5.7",
   "babel-core": "^6.26.3",
-  "babel-jest": "^26.0.1",
+  "babel-jest": "^26.1.0",
   "jest": "^26",
   "ts-jest": "^26.1.0",
   "tslint": "^6.1.2",

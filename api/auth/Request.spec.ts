@@ -1,0 +1,53 @@
+import * as isoly from "isoly"
+import { Request } from "./Request"
+
+describe("service.ch3d2.api.auth.Request", () => {
+	it("test numeric country code when string", () => expect(isoly.CountryCode.Numeric.is(+"752")).toBeTruthy())
+	const request = {
+		"notificationURL": "https://3ds_callback.example.org/challenge/end",
+		"threeDSCompInd": "Y",
+		"threeDSRequestorURL": "https://threedsrequestor.example.org",
+		"acquirerBIN": "438309",
+		"acquirerMerchantID": "00002000000",
+		"cardExpiryDate": "1910",
+		"billAddrCity": "Bill City Name",
+		"billAddrCountry": "840",
+		"billAddrLine1": "Bill Address Line 1",
+		"billAddrPostCode": "Bill Post Code",
+		"billAddrState": "CO",
+		"email": "example@example.com",
+		"threeDSRequestorAuthenticationInd": "01",
+		"cardholderName": "Cardholder Name",
+		"deviceChannel": "02",
+		"browserJavascriptEnabled": true,
+		"browserAcceptHeader": "text/html,application/xhtml+xml,application/xml; q=0.9,*/*;q=0.8",
+		"browserIP": "192.168.1.11",
+		"browserJavaEnabled": true,
+		"browserLanguage": "en",
+		"browserColorDepth": "48",
+		"browserScreenHeight": "400",
+		"browserScreenWidth": "600",
+		"browserTZ": "0",
+		"browserUserAgent": "Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:47.0) Gecko/20100101 Firefox/47.0",
+		"mcc": "5411",
+		"merchantCountryCode": "840",
+		"merchantName": "Dummy Merchant",
+		"messageCategory": "01",
+		"messageType": "AReq",
+		"messageVersion": "2.1.0",
+		"purchaseAmount": "101",
+		"purchaseCurrency": "840",
+		"purchaseExponent": "2",
+		"purchaseDate": "20170316141312",
+		"transType": "01",
+		"sdkAppID": "dummy-id",
+		"sdkEncData": "dummy-value",
+		"sdkEphemPubKey": 0x1234,
+		"sdkMaxTimeout": "99",
+		"sdkReferenceNumber": "dummy-ref-number",
+		"sdkTransID": "dummy-id",
+		"threeDSServerTransID": "dummy-id",
+		"threeRIInd": "03",
+	}
+	it("is", () => expect(Request.is(request)).toBe(true))
+})

@@ -4,8 +4,8 @@ import { Response } from "./Response"
 import { Configuration } from "../Configuration"
 import * as connection from "../post"
 
-async function post(configuration: Configuration, request: Request): Promise<Response | gracely.Error> {
-	return connection.post(configuration, "preauth", request)
+async function post(configuration: Configuration, request: Request): Promise<Response | Error | gracely.Error> {
+	return connection.post<Request, Response | Error | gracely.Error>(configuration, "preauth", request)
 }
 
 export {

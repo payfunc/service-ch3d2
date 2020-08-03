@@ -4,6 +4,8 @@ import { AcsRenderingType } from "./AcsRenderingType"
 import { Currency } from "./Currency"
 import { Date } from "./Date"
 import { DeviceRenderOptions } from "./DeviceRenderOptions"
+import { ErrorCode } from "./ErrorCode"
+import { ErrorMessageType } from "./ErrorMessageType"
 import { MerchantRiskIndicator } from "./MerchantRiskIndicator"
 import { MessageExtension } from "./MessageExtension"
 import { PhoneNumber } from "./PhoneNumber"
@@ -20,6 +22,8 @@ export {
 	Currency,
 	Date,
 	DeviceRenderOptions,
+	ErrorCode,
+	ErrorMessageType,
 	MerchantRiskIndicator,
 	MessageExtension,
 	PhoneNumber,

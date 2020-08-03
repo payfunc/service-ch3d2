@@ -8,5 +8,6 @@ describe("service-ch3d2", () => {
 		ch3d2.api.postauth.Request.is({})
 		const ch3d2CallFunctions = [ch3d2.preauth, ch3d2.auth, ch3d2.postauth]
 		ch3d2.api.model.Currency.is("752")
+		ch3d2.api.Error.is({})
 	})
 })

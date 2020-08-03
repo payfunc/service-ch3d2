@@ -1,6 +1,7 @@
 import * as gracely from "gracely"
 import { Request } from "./Request"
 import { Response } from "./Response"
+import { Error } from "../Error"
 import { Configuration } from "../Configuration"
 import * as connection from "../post"
 

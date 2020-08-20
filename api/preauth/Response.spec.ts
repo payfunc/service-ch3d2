@@ -10,7 +10,8 @@ describe("service.ch3d2.api.preauth.Response", () => {
 			dsStartProtocolVersion: "2.1.0",
 			endRange: "4111111111111111",
 			startRange: "4100000000000000",
-			threeDSMethodURL: "https://www.example.com/alongurlisalongurlisalongurlisalongurlisalongurlisalongurlisalongurlisalongurlisalongurlisalongurlisalongurlisalongurlisalongurlisalongurlisalongurlisalongurlisalongurlisalongurlisalongurlisalongurlisalongurl/butnotlongerthanthisurl",
+			threeDSMethodURL:
+				"https://www.example.com/alongurlisalongurlisalongurlisalongurlisalongurlisalongurlisalongurlisalongurlisalongurlisalongurlisalongurlisalongurlisalongurlisalongurlisalongurlisalongurlisalongurlisalongurlisalongurlisalongurlisalongurl/butnotlongerthanthisurl",
 			threeDSServerTransID: "01234567-89ab-cdef-0123-456789abcdef",
 		}
 		expect(Response.is(response)).toBeTruthy()

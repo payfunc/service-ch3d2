@@ -1,4 +1,3 @@
-
 import { AcctInfo } from "./AcctInfo"
 import { AcsRenderingType } from "./AcsRenderingType"
 import { Currency } from "./Currency"

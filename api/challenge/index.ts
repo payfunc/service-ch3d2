@@ -9,8 +9,4 @@ async function post(configuration: Configuration, request: Request): Promise<Res
 	return connection.post<Request, Response | Error | gracely.Error>(configuration, "preauth", request)
 }
 
-export {
-	Request,
-	Response,
-	post,
-}
+export { Request, Response, post }

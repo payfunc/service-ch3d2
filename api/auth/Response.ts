@@ -21,32 +21,76 @@ export interface Response {
 	sdkTransID?: string
 	threeDSServerTransID: string
 	transStatus?: "Y" | "N" | "U" | "A" | "C" | "R"
-	transStatusReason?: "01" | "02" | "03" | "04" | "05" | "06" | "07" | "08" | "09" | "10" | "11" | "12" | "13" | "14" | "15" | "16" | "17" | "18" | "19" | "20" | "21"
+	transStatusReason?:
+		| "01"
+		| "02"
+		| "03"
+		| "04"
+		| "05"
+		| "06"
+		| "07"
+		| "08"
+		| "09"
+		| "10"
+		| "11"
+		| "12"
+		| "13"
+		| "14"
+		| "15"
+		| "16"
+		| "17"
+		| "18"
+		| "19"
+		| "20"
+		| "21"
 }
 
-// tslint:disable-next-line: no-namespace
 export namespace Response {
 	export function is(value: Response | any): value is Response {
-		return typeof value == "object" &&
-			(value.acsChallengeMandated == undefined || value.acsChallengeMandated == "Y" || value.acsChallengeMandated == "N") &&
-			(value.acsOperatorID == undefined || typeof value.acsOperatorID == "string" && value.acsOperatorID.length <= 32) &&
-			(value.acsReferenceNumber == undefined || typeof value.acsReferenceNumber == "string" && value.acsReferenceNumber.length <= 32) &&
+		return (
+			typeof value == "object" &&
+			(value.acsChallengeMandated == undefined ||
+				value.acsChallengeMandated == "Y" ||
+				value.acsChallengeMandated == "N") &&
+			(value.acsOperatorID == undefined ||
+				(typeof value.acsOperatorID == "string" && value.acsOperatorID.length <= 32)) &&
+			(value.acsReferenceNumber == undefined ||
+				(typeof value.acsReferenceNumber == "string" && value.acsReferenceNumber.length <= 32)) &&
 			(value.acsRenderingType == undefined || AcsRenderingType.is(value.acsRenderingType)) &&
 			(value.acsSignedContent == undefined || typeof value.acsSignedContent == "string") &&
 			typeof value.acsTransID == "string" &&
-			(value.acsURL == undefined || typeof value.acsURL == "string" && value.acsURL.length <= 2048) &&
-			(value.authenticationType == undefined || value.authenticationType == "01" || value.authenticationType == "02" || value.authenticationType == "03") &&
-			(value.authenticationValue == undefined || typeof value.authenticationValue == "string" && value.authenticationValue.length == 28) &&
-			(value.cardholderInfo == undefined || typeof value.cardholderInfo == "string" && value.cardholderInfo.length <= 128) &&
-			typeof value.dsReferenceNumber == "string" && value.dsReferenceNumber.length <= 32 &&
+			(value.acsURL == undefined || (typeof value.acsURL == "string" && value.acsURL.length <= 2048)) &&
+			(value.authenticationType == undefined ||
+				value.authenticationType == "01" ||
+				value.authenticationType == "02" ||
+				value.authenticationType == "03") &&
+			(value.authenticationValue == undefined ||
+				(typeof value.authenticationValue == "string" && value.authenticationValue.length == 28)) &&
+			(value.cardholderInfo == undefined ||
+				(typeof value.cardholderInfo == "string" && value.cardholderInfo.length <= 128)) &&
+			typeof value.dsReferenceNumber == "string" &&
+			value.dsReferenceNumber.length <= 32 &&
 			typeof value.dsTransID == "string" &&
-			(value.eci == undefined || typeof value.eci == "string" && value.eci.length <= 2) &&
-			(value.messageExtension == undefined || Array.isArray(value.messageExtension) && value.messageExtension.length <= 10 && value.messageExtension.every((message: any) => MessageExtension.is(message))) &&
+			(value.eci == undefined || (typeof value.eci == "string" && value.eci.length <= 2)) &&
+			(value.messageExtension == undefined ||
+				(Array.isArray(value.messageExtension) &&
+					value.messageExtension.length <= 10 &&
+					value.messageExtension.every((message: any) => MessageExtension.is(message)))) &&
 			value.messageType == "ARes" &&
 			(value.messageVersion == "2.1.0" || value.messageVersion == "2.2.0") &&
 			(value.sdkTransID == undefined || typeof value.sdkTransID == "string") &&
 			typeof value.threeDSServerTransID == "string" &&
-			(value.transStatus == undefined || value.transStatus == "Y" || value.transStatus == "N" || value.transStatus == "U" || value.transStatus == "A" || value.transStatus == "C" || value.transStatus == "R") &&
-			(value.transStatusReason == undefined || typeof value.transStatusReason == "string" && value.transStatusReason.length == 2 && /^(0[1-9]|1\d|20|21)$/.test(value.transStatusReason))
+			(value.transStatus == undefined ||
+				value.transStatus == "Y" ||
+				value.transStatus == "N" ||
+				value.transStatus == "U" ||
+				value.transStatus == "A" ||
+				value.transStatus == "C" ||
+				value.transStatus == "R") &&
+			(value.transStatusReason == undefined ||
+				(typeof value.transStatusReason == "string" &&
+					value.transStatusReason.length == 2 &&
+					/^(0[1-9]|1\d|20|21)$/.test(value.transStatusReason)))
+		)
 	}
 }

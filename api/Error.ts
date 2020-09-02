@@ -12,7 +12,7 @@ export interface Error {
 	messageType: "erro"
 	messageVersion: "2.1.0" | "2.2.0"
 	sdkTransID?: string
-	threeDSServerTransID: string
+	threeDSServerTransID?: string
 }
 
 export namespace Error {
@@ -28,11 +28,11 @@ export namespace Error {
 				value.errorComponent == "A") &&
 			typeof value.errorDescription == "string" &&
 			typeof value.errorDetail == "string" &&
-			ErrorMessageType.is(value.errorMessageType) &&
+			(value.errorMessageType == undefined || ErrorMessageType.is(value.errorMessageType)) &&
 			value.messageType == "erro" &&
 			(value.messageVersion == "2.1.0" || value.messageVersion == "2.2.0") &&
 			(value.sdkTransID == undefined || typeof value.sdkTransID == "string") &&
-			typeof value.threeDSServerTransID == "string"
+			(value.threeDSServerTransID == undefined || typeof value.threeDSServerTransID == "string")
 		)
 	}
 }

@@ -89,8 +89,11 @@ export class Verifier extends model.PaymentVerifier {
 							const preauthResponse = await preauth(key, merchant, token)
 							if (logFunction)
 								logFunction("ch3d2.preauth", "trace", { token, response: preauthResponse })
+							if (api.Error.is(preauthResponse) && preauthResponse.errorCode == "305")
+								result = gracely.client.malformedContent("Card.Token", "verification issue", "Not enrolled.")
 							// TODO
-							result = gracely.server.backendFailure("ch3d2.verify preauth response handling not implemented.")
+							else
+								result = gracely.server.backendFailure("ch3d2.verify preauth response handling not implemented.")
 						} else if (cardToken.verification.type == "method") {
 							if (typeof cardToken.verification.data != "object") {
 								result = gracely.client.invalidContent(

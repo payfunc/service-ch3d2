@@ -34,4 +34,7 @@ export namespace Response {
 			typeof value.threeDSServerTransID == "string"
 		)
 	}
+	export function methodRequired(response: Response): boolean {
+		return !!response.threeDSMethodURL
+	}
 }

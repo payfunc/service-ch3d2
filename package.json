@@ -49,8 +49,8 @@
 		"clean": "rm -rf dist node_modules coverage"
 	},
 	"dependencies": {
-		"@cardfunc/model": "0.0.72",
-		"@payfunc/model": "0.1.82",
+		"@cardfunc/model": "0.0.75",
+		"@payfunc/model": "0.1.92",
 		"authly": "0.0.40",
 		"eslint-plugin-prettierx": "github:nilssonemma/eslint-plugin-prettierx#master",
 		"form-urlencoded": "^4.2.1",

@@ -1,3 +1,4 @@
+import { default as fetch } from "node-fetch"
 import * as authly from "authly"
 import * as gracely from "gracely"
 import * as model from "@payfunc/model"

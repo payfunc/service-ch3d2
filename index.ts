@@ -89,14 +89,30 @@ export class Verifier extends model.PaymentVerifier {
 							const preauthResponse = await preauth(key, merchant, token)
 							if (logFunction)
 								logFunction("ch3d2.preauth", "trace", { token, response: preauthResponse })
-							if (api.Error.is(preauthResponse) && preauthResponse.errorCode == "305")
-								result = gracely.client.malformedContent("Card.Token", "verification issue", "Not enrolled.")
-							else
-								result = gracely.server.backendFailure(
-									"ch3d2.verify preauth response handling not implemented.",
-									preauthResponse,
-									api.Error.is(preauthResponse)
+							if (api.Error.is(preauthResponse))
+								result =
+									preauthResponse.errorCode == "305"
+										? gracely.client.malformedContent("card.pan", "string", "Not enrolled.")
+										: gracely.server.backendFailure("Unhandled backend error.")
+							else if (gracely.Error.is(preauthResponse))
+								result = preauthResponse
+							else if (preauthResponse.threeDSMethodURL) {
+								result = model.PaymentVerifier.Response.verificationRequired(
+									true,
+									"GET",
+									preauthResponse.threeDSMethodURL,
+									{
+										type: "method",
+										transactionId: preauthResponse.threeDSServerTransID,
+										acsStartProtocolVersion: preauthResponse.acsStartProtocolVersion,
+										acsEndProtocolVersion: preauthResponse.acsEndProtocolVersion,
+										dsStartProtocolVersion: preauthResponse.acsStartProtocolVersion,
+										dsEndProtocolVersion: preauthResponse.acsEndProtocolVersion,
+									}
 								)
+							} else {
+								result = model.PaymentVerifier.Response.unverified()
+							}
 						} else if (cardToken.verification.type == "method") {
 							if (typeof cardToken.verification.data != "object") {
 								result = gracely.client.invalidContent(

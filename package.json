@@ -50,7 +50,7 @@
 	},
 	"dependencies": {
 		"@cardfunc/model": "0.0.75",
-		"@payfunc/model": "0.1.92",
+		"@payfunc/model": "0.1.95",
 		"authly": "0.0.40",
 		"eslint-plugin-prettierx": "github:nilssonemma/eslint-plugin-prettierx#master",
 		"form-urlencoded": "^4.2.1",

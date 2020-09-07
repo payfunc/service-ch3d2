@@ -72,7 +72,10 @@ export class Verifier extends model.PaymentVerifier {
 						: undefined
 				if (method)
 					token = method.card ?? method.reference
-				if ((await card.Card.Token.verify(token))?.type == "single use" || (await card.Account.verify(token)))
+				if (
+					request.reference.type == "account" &&
+					((await card.Card.Token.verify(token))?.type == "single use" || (await card.Account.verify(token)))
+				)
 					token = await accountToCardToken(key, merchant as model.Merchant.Key.KeyInfo, token)
 				if (gracely.Error.is(token))
 					result = token

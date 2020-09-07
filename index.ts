@@ -98,16 +98,12 @@ export class Verifier extends model.PaymentVerifier {
 								result = preauthResponse
 							else if (preauthResponse.threeDSMethodURL) {
 								result = model.PaymentVerifier.Response.verificationRequired(
-									true,
+									false,
 									"GET",
 									preauthResponse.threeDSMethodURL,
 									{
 										type: "method",
-										transactionId: preauthResponse.threeDSServerTransID,
-										acsStartProtocolVersion: preauthResponse.acsStartProtocolVersion,
-										acsEndProtocolVersion: preauthResponse.acsEndProtocolVersion,
-										dsStartProtocolVersion: preauthResponse.acsStartProtocolVersion,
-										dsEndProtocolVersion: preauthResponse.acsEndProtocolVersion,
+										threeDSServerTransID: preauthResponse.threeDSServerTransID,
 									}
 								)
 							} else {
@@ -129,7 +125,7 @@ export class Verifier extends model.PaymentVerifier {
 									messageType: "AReq",
 									messageVersion: "2.1.0",
 									threeDSRequestorURL: "https://payfunc.com/about/contact/",
-									threeDSServerTransID: cardToken.verification.data.transaction,
+									threeDSServerTransID: cardToken.verification.data.threeDSServerTransID,
 								}
 								const authResponse = await auth(key, merchant, authRequest, token)
 								if (logFunction)

@@ -88,7 +88,7 @@ export class Verifier extends model.PaymentVerifier {
 							"not a card or account token"
 						)
 					else {
-						if (!cardToken.verification) {
+						if (!cardToken.verification && force) {
 							const preauthResponse = await preauth(key, merchant, token)
 							if (logFunction)
 								logFunction("ch3d2.preauth", "trace", { token, response: preauthResponse })
@@ -112,7 +112,7 @@ export class Verifier extends model.PaymentVerifier {
 							} else {
 								result = model.PaymentVerifier.Response.unverified()
 							}
-						} else if (cardToken.verification.type == "method") {
+						} else if (cardToken.verification?.type == "method" && !force) {
 							if (typeof cardToken.verification.data != "object") {
 								result = gracely.client.invalidContent(
 									"Card.Verification",
@@ -142,10 +142,31 @@ export class Verifier extends model.PaymentVerifier {
 								const authResponse = await auth(key, merchant, authRequest, token)
 								if (logFunction)
 									logFunction("ch3d2.preauth", "trace", { token, response: authResponse })
-								// TODO
-								result = gracely.server.backendFailure("ch3d2.verify auth response handling not implemented.")
+								if (gracely.Error.is(authResponse))
+									result = authResponse
+								else if (api.Error.is(authResponse))
+									result = gracely.server.backendFailure(
+										"ch3d2.verify auth responsed with error code:",
+										authResponse.errorCode
+									)
+								else if (api.auth.Response.is(authResponse))
+									result =
+										authResponse.transStatus == "Y" || authResponse.transStatus == "A"
+											? model.PaymentVerifier.Response.verified()
+											: authResponse.transStatus == "C"
+											? model.PaymentVerifier.Response.verificationRequired(true, "GET", authResponse.acsURL ?? "", {
+													type: "challenge",
+													threeDSServerTransID: authResponse.threeDSServerTransID,
+													acsTransID: authResponse.acsTransID,
+													messageVersion: authResponse.messageVersion,
+													messageType: "CReq",
+													challengeWindowSize: "01",
+											  })
+											: (result = gracely.client.malformedContent("Card.Token", "string", "3D Secure Failed."))
+								else
+									result = gracely.server.backendFailure("ch3d2.verify auth failed with unknown error")
 							}
-						} else if (cardToken.verification.type == "challenge") {
+						} else if (cardToken.verification?.type == "challenge" && !force) {
 							if (typeof cardToken.verification.data != "object") {
 								result = gracely.client.invalidContent(
 									"Card.Verification",
@@ -160,9 +181,21 @@ export class Verifier extends model.PaymentVerifier {
 								}
 								const postauthResponse = await postauth(key, merchant, postauthRequest, token)
 								if (logFunction)
-									logFunction("ch3d2.preauth", "trace", { token, response: postauthResponse })
-								// TODO
-								result = gracely.server.backendFailure("ch3d2.verify postauth response handling not implemented.")
+									logFunction("ch3d2.postauth", "trace", { token, response: postauthResponse })
+								if (gracely.Error.is(postauthResponse))
+									result = postauthResponse
+								else if (api.Error.is(postauthResponse))
+									result = gracely.server.backendFailure(
+										"ch3d2.verify postauth responsed with error code:",
+										postauthResponse.errorCode
+									)
+								else if (api.postauth.Response.is(postauthResponse))
+									result =
+										postauthResponse.transStatus == "Y" || postauthResponse.transStatus == "A"
+											? model.PaymentVerifier.Response.verified()
+											: (result = gracely.client.malformedContent("Card.Token", "string", "3D Secure Failed."))
+								else
+									result = gracely.server.backendFailure("ch3d2.verify postauth failed with unknown error")
 							}
 						} else {
 							result = gracely.server.backendFailure("ch3d2.verify undefined behaviour.")

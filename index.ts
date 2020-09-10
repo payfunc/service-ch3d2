@@ -177,7 +177,7 @@ export class Verifier extends model.PaymentVerifier {
 									logFunction("ch3d2.verify", "error", { token, response: result })
 							} else {
 								const postauthRequest: api.postauth.Request = {
-									threeDSServerTransID: cardToken.verification.data.transaction,
+									threeDSServerTransID: cardToken.verification.data.threeDSServerTransID,
 								}
 								const postauthResponse = await postauth(key, merchant, postauthRequest, token)
 								if (logFunction)

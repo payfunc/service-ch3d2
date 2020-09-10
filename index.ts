@@ -129,6 +129,15 @@ export class Verifier extends model.PaymentVerifier {
 									messageVersion: "2.1.0",
 									threeDSRequestorURL: "https://payfunc.com/about/contact/",
 									threeDSServerTransID: cardToken.verification.data.threeDSServerTransID,
+									threeDSRequestorAuthenticationInd:
+										(request.payment.type == "account" && model.Item.amount(request.items) > 0) ||
+										(request.payment.type == "card" && request.payment.account)
+											? "02" // Recurring transaction
+											: model.Item.amount(request.items) == 0 && request.payment.type == "account"
+											? "04" // Add card
+											: "01", // Payment transaction
+									notificationURL: "https://ptsv2.com/t/biyh5-1587655411/post",
+									threeDSCompInd: "Y",
 								}
 								const authResponse = await auth(key, merchant, authRequest, token)
 								if (logFunction)

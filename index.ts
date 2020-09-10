@@ -198,7 +198,7 @@ export class Verifier extends model.PaymentVerifier {
 									result = gracely.server.backendFailure("ch3d2.verify postauth failed with unknown error")
 							}
 						} else {
-							result = gracely.server.backendFailure("ch3d2.verify undefined behaviour.")
+							result = model.PaymentVerifier.Response.unverified()
 						}
 					}
 				}

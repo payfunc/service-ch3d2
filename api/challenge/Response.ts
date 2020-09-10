@@ -17,14 +17,14 @@ export namespace Response {
 		return (
 			typeof value == "object" &&
 			(value.acsCounterAtoS == undefined || typeof value.acsCounterAtoS == "string") &&
-			typeof value.acsTransId == "string" &&
+			typeof value.acsTransID == "string" &&
 			(value.challengeCompletionIndicator == undefined ||
 				value.challengeCompletionIndicator == "Y" ||
 				value.challengeCompletionIndicator == "N") &&
 			(value.messageExtension == undefined || MessageExtension.is(value.messageExtension)) &&
 			value.messageType == "CRes" &&
 			(value.messageVersion == "2.1.0" || value.messageVersion == "2.2.0") &&
-			(value.sdkTransId == undefined || typeof value.sdkTransId == "string") &&
+			(value.sdkTransID == undefined || typeof value.sdkTransID == "string") &&
 			typeof value.threeDSServerTransID == "string" &&
 			(value.transStatus == "Y" || value.transStatus == "N")
 		)

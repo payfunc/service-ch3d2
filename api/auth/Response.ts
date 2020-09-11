@@ -93,7 +93,4 @@ export namespace Response {
 					/^(0[1-9]|1\d|20|21)$/.test(value.transStatusReason)))
 		)
 	}
-	export function challengeRequired(response: Response): boolean {
-		return response.transStatus == "C"
-	}
 }

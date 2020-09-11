@@ -41,6 +41,6 @@ describe("service-ch3d2", () => {
 			verifierCreateRequest,
 			true
 		)
-		expect(verifyResponse).toEqual("not this")
+		expect(verifyResponse).toEqual({ result: "success", type: "unverified" })
 	})
 })

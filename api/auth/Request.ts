@@ -372,12 +372,12 @@ export namespace Request {
 								},
 							(value.messageCategory != "01" && value.acquirerBIN == undefined) ||
 								(typeof value.acquirerBIN == "string" && value.acquirerBIN.length <= 11) || {
-									property: "",
+									property: "acquirerBIN",
 									type: "string | undefined",
 								},
 							(value.messageCategory != "01" && value.acquirerMerchantID == undefined) ||
 								(typeof value.acquirerMerchantID == "string" && value.acquirerMerchantID.length <= 35) || {
-									property: "acquirerBIN",
+									property: "acquirerMerchantID",
 									type: "string | undefined",
 								},
 							value.addrMatch == undefined ||

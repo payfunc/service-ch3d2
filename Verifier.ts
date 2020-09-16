@@ -162,7 +162,8 @@ export class Verifier extends model.PaymentVerifier {
 				authRequest.purchaseCurrency = isoly.CurrencyCode.from(request.currency)
 				authRequest.purchaseExponent = decimals.toString()
 				authRequest.purchaseDate = ch3d2.api.model.PreciseTime.from(isoly.DateTime.now())
-			}
+			} else
+				authRequest.threeDSRequestorChallengeInd = "03" // "03" - We require challenge when creating an account.
 			authRequest = this.appendCustomerData(request.customer, authRequest)
 			const authResponse = await ch3d2.auth(key, merchant, authRequest, token)
 			if (logFunction)

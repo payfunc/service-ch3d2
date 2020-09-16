@@ -196,15 +196,7 @@ export class Verifier extends model.PaymentVerifier {
 					authRequest.email = email
 			}
 			if (customer.phone) {
-				let phone = model.PhoneNumbers.get(customer.email, "landline")
-				if (phone && phone.startsWith("+46") && phone.length > 3)
-					authRequest.homePhone = { cc: "+46", subscriber: phone.substring(3, phone.length) }
-				phone = model.PhoneNumbers.get(customer.email, "primary")
-				if (phone && phone.startsWith("+46") && phone.length > 3)
-					authRequest.workPhone = { cc: "+46", subscriber: phone.substring(3, phone.length) }
-				phone = model.PhoneNumbers.get(customer.email, "cellphone")
-				if (phone && phone.startsWith("+46") && phone.length > 3)
-					authRequest.mobilePhone = { cc: "+46", subscriber: phone.substring(3, phone.length) }
+				authRequest = { ...authRequest, ...ch3d2.api.convert.convertPhone(customer.phone) }
 			}
 		}
 		return authRequest

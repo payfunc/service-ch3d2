@@ -18,7 +18,7 @@ export class Verifier extends model.PaymentVerifier {
 		force?: boolean,
 		logFunction?: (step: string, level: "trace" | "debug" | "warning" | "error" | "fatal", content: any) => void
 	): Promise<model.PaymentVerifier.Response> {
-		let result: model.PaymentVerifier.Response | gracely.Error
+		let result: model.PaymentVerifier.Response | gracely.Error | undefined
 		const merchant =
 			(await model.Merchant.Key.KeyInfo.unpack(key, "public")) ??
 			(await model.Merchant.Key.KeyInfo.unpack(key, "private"))
@@ -62,7 +62,11 @@ export class Verifier extends model.PaymentVerifier {
 					else {
 						if (!cardToken.verification && force) {
 							result = await this.preauth(key, merchant, token, logFunction)
-						} else if (cardToken.verification?.type == "method" && !force) {
+						}
+						if (
+							(cardToken.verification?.type == "method" && !force) ||
+							(result && !gracely.Error.is(result) && result.type == "unverified")
+						) {
 							result = await this.auth(key, merchant, token, cardToken, logFunction, request)
 						} else if (cardToken.verification?.type == "challenge" && !force) {
 							result = await this.postauth(key, merchant, token, cardToken, logFunction)

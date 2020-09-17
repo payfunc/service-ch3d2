@@ -83,7 +83,7 @@ export class Verifier extends model.PaymentVerifier {
 	) {
 		return cardToken.verification?.type == type && typeof cardToken.verification.data == "object" && !force
 			? cardToken.verification.data.threeDSServerTransID
-			: typeof result == "string"
+			: typeof result == "string" && ((type == "method" && force) || (type == "challenge" && !force))
 			? result
 			: undefined
 	}
@@ -182,7 +182,7 @@ export class Verifier extends model.PaymentVerifier {
 		authRequest = this.appendCustomerData(request.customer, authRequest)
 		const authResponse = await ch3d2.auth(key, merchant, authRequest, token)
 		if (logFunction)
-			logFunction("ch3d2.preauth", "trace", { token, response: authResponse })
+			logFunction("ch3d2.auth", "trace", { token, response: authResponse })
 		if (gracely.Error.is(authResponse))
 			result = authResponse
 		else if (api.Error.is(authResponse))

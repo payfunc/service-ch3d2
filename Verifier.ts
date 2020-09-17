@@ -94,18 +94,12 @@ export class Verifier extends model.PaymentVerifier {
 		key: string,
 		merchant: model.Merchant.Key.KeyInfo,
 		token: string,
-		// cardToken: card.Card.Token,
 		logFunction:
 			| ((step: string, level: "trace" | "debug" | "warning" | "error" | "fatal", content: any) => void)
 			| undefined,
 		threeDSServerTransID: string
 	) {
 		let result: model.PaymentVerifier.Response | gracely.Error
-		// if (typeof cardToken.verification?.data != "object") {
-		// 	result = gracely.client.invalidContent("Card.Verification", "description", "Method verification data corrupt")
-		// 	if (logFunction)
-		// 		logFunction("ch3d2.verify", "error", { token, response: result })
-		// } else {
 		const postauthRequest: api.postauth.Request = {
 			threeDSServerTransID,
 		}
@@ -126,7 +120,6 @@ export class Verifier extends model.PaymentVerifier {
 					: (result = gracely.client.malformedContent("Card.Token", "string", "3D Secure Failed."))
 		else
 			result = gracely.server.backendFailure("ch3d2.verify postauth failed with unknown error")
-		// }
 		return result
 	}
 
@@ -134,7 +127,6 @@ export class Verifier extends model.PaymentVerifier {
 		key: string,
 		merchant: model.Merchant.Key.KeyInfo,
 		token: string,
-		// cardToken: card.Card.Token,
 		logFunction:
 			| ((step: string, level: "trace" | "debug" | "warning" | "error" | "fatal", content: any) => void)
 			| undefined,
@@ -142,11 +134,6 @@ export class Verifier extends model.PaymentVerifier {
 		threeDSServerTransID: string
 	) {
 		let result: model.PaymentVerifier.Response | gracely.Error
-		// if (typeof cardToken.verification?.data != "object") {
-		// 	result = gracely.client.invalidContent("Card.Verification", "description", "Method verification data corrupt")
-		// 	if (logFunction)
-		// 		logFunction("ch3d2.verify", "error", { token, response: result })
-		// } else {
 		const paymentType: "card" | "account" | "create account" =
 			(request.payment.type == "account" && model.Item.amount(request.items) > 0) ||
 			(request.payment.type == "card" && request.payment.account)
@@ -160,7 +147,7 @@ export class Verifier extends model.PaymentVerifier {
 			messageType: "AReq",
 			messageVersion: "2.1.0",
 			threeDSRequestorURL: "https://payfunc.com/about/contact/",
-			threeDSServerTransID, //: cardToken.verification.data.threeDSServerTransID,
+			threeDSServerTransID,
 			threeDSRequestorAuthenticationInd:
 				paymentType == "account"
 					? "02" // Recurring transaction
@@ -205,7 +192,6 @@ export class Verifier extends model.PaymentVerifier {
 					: (result = gracely.client.malformedContent("Card.Token", "string", "3D Secure Failed."))
 		else
 			result = gracely.server.backendFailure("ch3d2.verify auth failed with unknown error")
-		// }
 		return result
 	}
 
@@ -250,7 +236,7 @@ export class Verifier extends model.PaymentVerifier {
 				threeDSServerTransID: preauthResponse.threeDSServerTransID,
 			})
 		} else {
-			result = preauthResponse.threeDSServerTransID // model.PaymentVerifier.Response.unverified()
+			result = preauthResponse.threeDSServerTransID
 		}
 		return result
 	}

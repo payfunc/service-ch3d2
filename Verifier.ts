@@ -67,7 +67,9 @@ export class Verifier extends model.PaymentVerifier {
 							result = await this.auth(key, merchant, token, logFunction, request, threeDSServerTransID)
 						else if ((threeDSServerTransID = this.getVerificationId("challenge", cardToken, force, result)))
 							result = await this.postauth(key, merchant, token, logFunction, threeDSServerTransID)
-						else
+						else if (typeof result == "string")
+							result = gracely.server.backendFailure("result as string unhandled: ", result)
+						else if (!result)
 							result = model.PaymentVerifier.Response.unverified()
 					}
 				}

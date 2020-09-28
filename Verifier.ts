@@ -29,7 +29,11 @@ export class Verifier extends model.PaymentVerifier {
 				request.payment.type == "account"
 					? request.payment.token
 					: request.payment.type == "card"
-					? request.payment.account ?? request.payment.card ?? request.payment.reference
+					? request.payment.account ??
+					  request.payment.card ??
+					  (authly.Token.is(request.payment.reference)
+							? (await card.Authorization.verify(request.payment.reference))?.reference ?? request.payment.reference
+							: undefined)
 					: undefined
 			if (!token)
 				result = gracely.client.malformedContent(
@@ -45,7 +49,7 @@ export class Verifier extends model.PaymentVerifier {
 				if (method)
 					token = method.card ?? method.reference
 				if (
-					request.reference.type == "account" &&
+					(request.reference.type == "account" || (request.payment.type == "card" && request.payment.account)) &&
 					((await card.Card.Token.verify(token))?.type == "single use" || (await card.Account.verify(token)))
 				)
 					token = await accountToCardToken(key, merchant as model.Merchant.Key.KeyInfo, token)

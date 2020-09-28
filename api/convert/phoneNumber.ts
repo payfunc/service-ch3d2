@@ -1,3 +1,4 @@
+import isoly from "isoly"
 import * as model from "@payfunc/model"
 import * as api from "../index"
 
@@ -19,7 +20,9 @@ function extractPhoneNumber(
 ): api.model.PhoneNumber | undefined {
 	let result: api.model.PhoneNumber | undefined
 	const phone = model.PhoneNumbers.get(email, type)
-	if (phone && phone.startsWith("+46") && phone.length > 3)
-		result = { cc: "+46", subscriber: phone.substring(3, phone.length) }
+	if (phone) {
+		const split = isoly.CallingCode.seperate(phone)
+		result = { cc: split[0] ?? "", subscriber: split[1] }
+	}
 	return result
 }

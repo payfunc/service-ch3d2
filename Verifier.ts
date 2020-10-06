@@ -172,9 +172,9 @@ export class Verifier extends model.PaymentVerifier {
 			authRequest.purchaseExponent = decimals.toString()
 			authRequest.purchaseDate = ch3d2.api.model.PreciseTime.from(isoly.DateTime.now())
 			if (paymentType == "card" && authRequest.deviceChannel != "03")
-				authRequest.threeDSRequestorChallengeInd = "03" // "03" - We require challenge as auth is only run when additional verification is required.
+				authRequest.threeDSRequestorChallengeInd = "04" // "04" - We require challenge as auth is only run when additional verification is required.
 		} else
-			authRequest.threeDSRequestorChallengeInd = "03" // "03" - We require challenge when creating an account.
+			authRequest.threeDSRequestorChallengeInd = "04" // "04" - We require challenge when creating an account.
 		authRequest = this.appendCustomerData(request.customer, authRequest)
 		const authResponse = await ch3d2.auth(key, merchant, authRequest, token)
 		if (logFunction)

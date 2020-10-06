@@ -159,6 +159,7 @@ export class Verifier extends model.PaymentVerifier {
 					? "04" // Add card
 					: "01", // Payment transaction
 			threeDSCompInd: "Y",
+			transType: "01",
 		}
 		if (paymentType != "create account") {
 			const decimals = isoly.Currency.decimalDigits(request.currency) ?? 0

@@ -1,4 +1,4 @@
-import isoly from "isoly"
+import * as isoly from "isoly"
 import * as model from "@payfunc/model"
 import * as api from "../index"
 

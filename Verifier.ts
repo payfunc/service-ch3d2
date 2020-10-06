@@ -171,6 +171,8 @@ export class Verifier extends model.PaymentVerifier {
 			authRequest.purchaseCurrency = isoly.CurrencyCode.from(request.currency)
 			authRequest.purchaseExponent = decimals.toString()
 			authRequest.purchaseDate = ch3d2.api.model.PreciseTime.from(isoly.DateTime.now())
+			if (paymentType == "card" && authRequest.deviceChannel != "03")
+				authRequest.threeDSRequestorChallengeInd = "03" // "03" - We require challenge as auth is only run when additional verification is required.
 		} else
 			authRequest.threeDSRequestorChallengeInd = "03" // "03" - We require challenge when creating an account.
 		authRequest = this.appendCustomerData(request.customer, authRequest)

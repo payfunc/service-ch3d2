@@ -33,7 +33,7 @@ export function convertAddress(input: model.Address | model.Addresses): Partial<
 		: {
 				addrMatch,
 				billAddrCity: billingAddress.city,
-				billAddrCountry: isoly.CountryCode.Alpha3.from(billingAddress.countryCode),
+				billAddrCountry: isoly.CountryCode.Numeric.from(billingAddress.countryCode).toString(),
 				billAddrLine1: billingAddress.street,
 				billAddrLine2: "",
 				billAddrLine3: "",
@@ -54,7 +54,7 @@ export function convertAddress(input: model.Address | model.Addresses): Partial<
 		: {
 				...result,
 				shipAddrCity: deliveryAddress.city,
-				shipAddrCountry: isoly.CountryCode.Alpha3.from(deliveryAddress.countryCode),
+				shipAddrCountry: isoly.CountryCode.Numeric.from(deliveryAddress.countryCode).toString(),
 				shipAddrLine1: deliveryAddress.street,
 				shipAddrLine2: "",
 				shipAddrLine3: "",

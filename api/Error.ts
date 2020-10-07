@@ -8,7 +8,7 @@ export interface Error {
 	errorComponent: "C" | "S" | "D" | "A"
 	errorDescription: string
 	errorDetail: string
-	errorMessageType?: ErrorMessageType
+	errorMessageType?: ErrorMessageType | string
 	messageType: "Erro"
 	messageVersion: "2.1.0" | "2.2.0"
 	sdkTransID?: string
@@ -22,15 +22,12 @@ export namespace Error {
 			(value.acsTransID == undefined || typeof value.acsTransID == "string") &&
 			(value.dsTransID == undefined || typeof value.dsTransID == "string") &&
 			ErrorCode.is(value.errorCode) &&
-			(value.errorComponent == "C" ||
-				value.errorComponent == "S" ||
-				value.errorComponent == "D" ||
-				value.errorComponent == "A") &&
+			typeof value.errorComponent == "string" &&
 			typeof value.errorDescription == "string" &&
 			typeof value.errorDetail == "string" &&
-			(value.errorMessageType == undefined || ErrorMessageType.is(value.errorMessageType)) &&
-			value.messageType == "Erro" &&
-			(value.messageVersion == "2.1.0" || value.messageVersion == "2.2.0") &&
+			(value.errorMessageType == undefined || typeof value.errorMessageType == "string") &&
+			(value.messageType == "Erro" || value.messageType == "erro") &&
+			typeof value.messageVersion == "string" &&
 			(value.sdkTransID == undefined || typeof value.sdkTransID == "string") &&
 			(value.threeDSServerTransID == undefined || typeof value.threeDSServerTransID == "string")
 		)

@@ -19,9 +19,7 @@ export class Verifier extends model.PaymentVerifier {
 		logFunction?: (step: string, level: "trace" | "debug" | "warning" | "error" | "fatal", content: any) => void
 	): Promise<model.PaymentVerifier.Response> {
 		let result: model.PaymentVerifier.Response | gracely.Error | string | undefined
-		const merchant =
-			(await model.Merchant.Key.KeyInfo.unpack(key, "public")) ??
-			(await model.Merchant.Key.KeyInfo.unpack(key, "private"))
+		const merchant = await model.Key.unpack(key, "public", "private")
 		if (!merchant)
 			result = gracely.client.unauthorized()
 		else {
@@ -52,7 +50,7 @@ export class Verifier extends model.PaymentVerifier {
 					(request.reference.type == "account" || (request.payment.type == "card" && request.payment.account)) &&
 					((await card.Card.Token.verify(token))?.type == "single use" || (await card.Account.verify(token)))
 				)
-					token = await accountToCardToken(key, merchant as model.Merchant.Key.KeyInfo, token)
+					token = await accountToCardToken(key, merchant, token)
 				if (gracely.Error.is(token))
 					result = token
 				else {
@@ -96,7 +94,7 @@ export class Verifier extends model.PaymentVerifier {
 
 	private async postauth(
 		key: string,
-		merchant: model.Merchant.Key.KeyInfo,
+		merchant: model.Key,
 		token: string,
 		logFunction:
 			| ((step: string, level: "trace" | "debug" | "warning" | "error" | "fatal", content: any) => void)
@@ -129,7 +127,7 @@ export class Verifier extends model.PaymentVerifier {
 
 	private async auth(
 		key: string,
-		merchant: model.Merchant.Key.KeyInfo,
+		merchant: model.Key,
 		token: string,
 		logFunction:
 			| ((step: string, level: "trace" | "debug" | "warning" | "error" | "fatal", content: any) => void)
@@ -220,7 +218,7 @@ export class Verifier extends model.PaymentVerifier {
 
 	private async preauth(
 		key: string,
-		merchant: model.Merchant.Key.KeyInfo,
+		merchant: model.Key,
 		token: string,
 		logFunction:
 			| ((step: string, level: "trace" | "debug" | "warning" | "error" | "fatal", content: any) => void)
@@ -251,7 +249,7 @@ export class Verifier extends model.PaymentVerifier {
 
 export async function accountToCardToken(
 	key: authly.Token,
-	merchant: model.Merchant.Key.KeyInfo,
+	merchant: model.Key,
 	previous: authly.Token
 ): Promise<authly.Token | gracely.Error> {
 	let result: authly.Token | gracely.Error

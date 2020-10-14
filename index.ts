@@ -6,7 +6,7 @@ import { Verifier } from "./Verifier"
 
 async function preauth(
 	key: authly.Token,
-	merchant: model.Merchant.Key.KeyInfo,
+	merchant: model.Key,
 	token: authly.Token
 ): Promise<api.preauth.Response | api.Error | gracely.Error> {
 	return !merchant.card ? gracely.client.unauthorized() : api.preauth.post({ url: merchant.card.url, key }, token)
@@ -14,7 +14,7 @@ async function preauth(
 
 async function auth(
 	key: authly.Token,
-	merchant: model.Merchant.Key.KeyInfo,
+	merchant: model.Key,
 	request: api.auth.Request,
 	token: authly.Token
 ): Promise<api.auth.Response | api.Error | gracely.Error> {
@@ -23,7 +23,7 @@ async function auth(
 
 async function postauth(
 	key: authly.Token,
-	merchant: model.Merchant.Key.KeyInfo,
+	merchant: model.Key,
 	request: api.postauth.Request,
 	token: authly.Token
 ): Promise<api.postauth.Response | api.Error | gracely.Error> {

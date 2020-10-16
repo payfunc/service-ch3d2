@@ -23,58 +23,27 @@ export class Verifier extends model.PaymentVerifier {
 		if (!merchant)
 			result = gracely.client.unauthorized()
 		else {
-			let token: authly.Token | gracely.Error | undefined =
+			const token: authly.Token | undefined =
 				request.payment.type == "account"
 					? request.payment.token
 					: request.payment.type == "card"
-					? request.payment.account ??
-					  request.payment.card ??
-					  (authly.Token.is(request.payment.reference)
-							? (await card.Authorization.verify(request.payment.reference))?.reference ?? request.payment.reference
-							: undefined)
+					? request.payment.card
 					: undefined
-			if (!token)
-				result = gracely.client.malformedContent(
-					"request.payment.card | request.payment.account",
-					"model.Card.Token | model.Account.",
-					"not a card or account token"
-				)
+			const cardToken = token ? await card.Card.Token.verify(token) : undefined
+			if (!token || !cardToken)
+				result = gracely.client.malformedContent("request.payment.card", "model.Card.Token", "not a card token")
 			else {
-				const method =
-					request.payment.type == "card" && request.payment.account
-						? await model.Account.Method.Card.Creatable.verify(request.payment.account)
-						: undefined
-				if (method)
-					token = method.card ?? method.reference
-				if (
-					(request.reference.type == "account" || (request.payment.type == "card" && request.payment.account)) &&
-					((await card.Card.Token.verify(token))?.type == "single use" || (await card.Account.verify(token)))
-				)
-					token = await accountToCardToken(key, merchant, token)
-				if (gracely.Error.is(token))
-					result = token
-				else {
-					const cardToken = await card.Card.Token.verify(token)
-					if (!cardToken)
-						result = gracely.client.malformedContent(
-							"request.payment.card | request.payment.account",
-							"model.Card.Token | model.Account.",
-							"not a card or account token"
-						)
-					else {
-						let threeDSServerTransID: string | undefined
-						if (!cardToken.verification && force)
-							result = await this.preauth(key, merchant, token, logFunction)
-						if ((threeDSServerTransID = this.getVerificationId("method", cardToken, force, result)))
-							result = await this.auth(key, merchant, token, logFunction, request, threeDSServerTransID)
-						else if ((threeDSServerTransID = this.getVerificationId("challenge", cardToken, force, result)))
-							result = await this.postauth(key, merchant, token, logFunction, threeDSServerTransID)
-						else if (typeof result == "string")
-							result = gracely.server.backendFailure("result as string unhandled: ", result)
-						else if (!result)
-							result = model.PaymentVerifier.Response.unverified()
-					}
-				}
+				let threeDSServerTransID: string | undefined
+				if (!cardToken.verification && force)
+					result = await this.preauth(key, merchant, token, logFunction)
+				if ((threeDSServerTransID = this.getVerificationId("method", cardToken, force, result)))
+					result = await this.auth(key, merchant, token, cardToken, logFunction, request, threeDSServerTransID)
+				else if ((threeDSServerTransID = this.getVerificationId("challenge", cardToken, force, result)))
+					result = await this.postauth(key, merchant, token, logFunction, threeDSServerTransID)
+				else if (typeof result == "string")
+					result = gracely.server.backendFailure("result as string unhandled: ", result)
+				else if (!result)
+					result = model.PaymentVerifier.Response.unverified()
 			}
 		}
 		return !gracely.Error.is(result) ? result : model.PaymentVerifier.Response.error(result)
@@ -93,7 +62,7 @@ export class Verifier extends model.PaymentVerifier {
 	}
 
 	private async postauth(
-		key: string,
+		key: authly.Token,
 		merchant: model.Key,
 		token: string,
 		logFunction:
@@ -129,6 +98,7 @@ export class Verifier extends model.PaymentVerifier {
 		key: string,
 		merchant: model.Key,
 		token: string,
+		cardToken: card.Card.Token,
 		logFunction:
 			| ((step: string, level: "trace" | "debug" | "warning" | "error" | "fatal", content: any) => void)
 			| undefined,
@@ -137,11 +107,10 @@ export class Verifier extends model.PaymentVerifier {
 	) {
 		let result: model.PaymentVerifier.Response | gracely.Error
 		const paymentType: "card" | "account" | "create account" =
-			(request.payment.type == "account" && model.Item.amount(request.items) > 0) ||
-			(request.payment.type == "card" && request.payment.account)
-				? "account"
-				: model.Item.amount(request.items) == 0 && request.payment.type == "account"
+			request.payment.type == "account" && model.Item.amount(request.items) == 0
 				? "create account"
+				: cardToken.type == "recurring"
+				? "account"
 				: "card"
 		let authRequest: api.auth.Request = {
 			deviceChannel: "02",
@@ -245,42 +214,4 @@ export class Verifier extends model.PaymentVerifier {
 		}
 		return result
 	}
-}
-
-export async function accountToCardToken(
-	key: authly.Token,
-	merchant: model.Key,
-	previous: authly.Token
-): Promise<authly.Token | gracely.Error> {
-	let result: authly.Token | gracely.Error
-	if (!merchant.card)
-		result = gracely.client.unauthorized()
-	else if (!card.Card.Token.verify(previous) && !card.Account.verify(previous))
-		result = gracely.client.invalidContent(
-			"token",
-			"authly.Token",
-			'Need a valid card token or an old account token to sign a new "recurring" card Token.'
-		)
-	else {
-		const accountTokenResponse = await fetch(merchant.card.url + "/card/" + previous + "/account", {
-			method: "GET",
-			headers: { authorization: `Bearer ${key}`, "content-type": "application/json; charset=utf-8" },
-		})
-		let accountTokenResponseBody
-		switch (accountTokenResponse.headers.get("content-type")) {
-			case "application/jwt; charset=utf-8":
-				result = await accountTokenResponse.text()
-				break
-			case "application/json; charset=utf-8":
-				accountTokenResponseBody = await accountTokenResponse.json()
-				result = gracely.Error.is(accountTokenResponseBody)
-					? accountTokenResponseBody
-					: gracely.client.invalidContent("token", "authly.Token")
-				break
-			default:
-				result = gracely.server.backendFailure("Unexpected answer from CardFunc.")
-				break
-		}
-	}
-	return result
 }

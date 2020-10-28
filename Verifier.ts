@@ -155,7 +155,7 @@ export class Verifier extends model.PaymentVerifier {
 				authResponse.transStatus == "Y" || authResponse.transStatus == "A"
 					? model.PaymentVerifier.Response.verified()
 					: authResponse.transStatus == "C"
-					? model.PaymentVerifier.Response.verificationRequired(true, "GET", authResponse.acsURL ?? "", {
+					? model.PaymentVerifier.Response.verificationRequired(true, "POST", authResponse.acsURL ?? "", {
 							type: "challenge",
 							threeDSServerTransID: authResponse.threeDSServerTransID,
 							acsTransID: authResponse.acsTransID,
@@ -205,7 +205,7 @@ export class Verifier extends model.PaymentVerifier {
 		else if (gracely.Error.is(preauthResponse))
 			result = preauthResponse
 		else if (preauthResponse.threeDSMethodURL) {
-			result = model.PaymentVerifier.Response.verificationRequired(false, "GET", preauthResponse.threeDSMethodURL, {
+			result = model.PaymentVerifier.Response.verificationRequired(false, "POST", preauthResponse.threeDSMethodURL, {
 				type: "method",
 				threeDSServerTransID: preauthResponse.threeDSServerTransID,
 			})

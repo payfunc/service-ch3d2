@@ -43,6 +43,26 @@ export interface Response {
 		| "19"
 		| "20"
 		| "21"
+		| "80"
+		| "81"
+		| "82"
+		| "83"
+		| "84"
+		| "85"
+		| "86"
+		| "87"
+		| "88"
+		| "89"
+		| "90"
+		| "91"
+		| "92"
+		| "93"
+		| "94"
+		| "95"
+		| "96"
+		| "97"
+		| "98"
+		| "99"
 }
 
 export namespace Response {
@@ -90,7 +110,7 @@ export namespace Response {
 			(value.transStatusReason == undefined ||
 				(typeof value.transStatusReason == "string" &&
 					value.transStatusReason.length == 2 &&
-					/^(0[1-9]|1\d|20|21)$/.test(value.transStatusReason)))
+					/^(0[1-9]|1[0-9]|2[0-1]|[89][0-9])$/.test(value.transStatusReason)))
 		)
 	}
 }

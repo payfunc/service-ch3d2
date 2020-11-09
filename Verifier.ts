@@ -19,7 +19,7 @@ export class Verifier extends model.PaymentVerifier {
 		logFunction?: (step: string, level: "trace" | "debug" | "warning" | "error" | "fatal", content: any) => void
 	): Promise<model.PaymentVerifier.Response> {
 		let result: model.PaymentVerifier.Response | gracely.Error | string | undefined
-		const merchant = await model.Key.unpack(key, "public", "private")
+		const merchant = await model.Key.unpack(key)
 		if (!merchant)
 			result = gracely.client.unauthorized()
 		else {

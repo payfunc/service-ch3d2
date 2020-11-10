@@ -69,6 +69,20 @@ export namespace Response {
 	export function is(value: Response | any): value is Response {
 		return (
 			typeof value == "object" &&
+			(value.messageType == "ARes" || value.messageType == "ares") &&
+			(value.transStatus == undefined ||
+				value.transStatus == "Y" ||
+				value.transStatus == "N" ||
+				value.transStatus == "U" ||
+				value.transStatus == "A" ||
+				value.transStatus == "C" ||
+				value.transStatus == "R") &&
+			(value.acsURL == undefined || typeof value.acsURL == "string")
+		)
+	}
+	export function isStrict(value: Response | any): value is Response {
+		return (
+			typeof value == "object" &&
 			(value.acsChallengeMandated == undefined ||
 				value.acsChallengeMandated == "Y" ||
 				value.acsChallengeMandated == "N") &&

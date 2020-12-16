@@ -10,7 +10,7 @@ export namespace MessageExtension {
 		return (
 			typeof value == "object" &&
 			typeof value.criticalityIndicator == "boolean" &&
-			value.data != undefined &&
+			typeof value.data == "object" &&
 			typeof value.id == "string" &&
 			value.id.length <= 64 &&
 			typeof value.name == "string" &&

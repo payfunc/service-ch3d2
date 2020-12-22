@@ -1,9 +1,8 @@
-import { default as fetch } from "node-fetch"
-import * as authly from "authly"
-import * as isoly from "isoly"
 import * as gracely from "gracely"
-import * as model from "@payfunc/model"
+import * as isoly from "isoly"
+import * as authly from "authly"
 import * as card from "@payfunc/model-card"
+import * as model from "@payfunc/model"
 import * as api from "./api"
 import * as ch3d2 from "./index"
 
@@ -179,7 +178,10 @@ export class Verifier extends model.PaymentVerifier {
 					authRequest.email = email
 			}
 			if (customer.phone) {
-				authRequest = { ...authRequest, ...ch3d2.api.convert.convertPhone(customer.phone) }
+				authRequest = {
+					...authRequest,
+					...ch3d2.api.convert.convertPhone(customer.phone, customer.address),
+				}
 			}
 		}
 		return authRequest

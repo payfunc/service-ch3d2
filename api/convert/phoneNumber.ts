@@ -36,7 +36,7 @@ function extractPhoneNumber(
 		const split = isoly.CallingCode.seperate(phone)
 		if (split[0] == undefined)
 			split[0] = isoly.CallingCode.from(countryCode)
-		result = { cc: split[0] ?? "+46", subscriber: split[1] }
+		result = { cc: (split[0] ?? "+46").replace("+", ""), subscriber: split[1] }
 	}
 	return result
 }

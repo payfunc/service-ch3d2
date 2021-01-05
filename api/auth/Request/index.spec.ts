@@ -1,5 +1,5 @@
 import * as isoly from "isoly"
-import { Request } from "./Request"
+import { Request } from "./index"
 
 describe("service.ch3d2.api.auth.Request", () => {
 	it("test numeric country code when string", () => expect(isoly.CountryCode.Numeric.is(+"752")).toBeTruthy())

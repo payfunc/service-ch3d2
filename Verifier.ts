@@ -1,5 +1,4 @@
 import * as gracely from "gracely"
-import * as isoly from "isoly"
 import * as authly from "authly"
 import * as card from "@payfunc/model-card"
 import * as model from "@payfunc/model"
@@ -105,44 +104,12 @@ export class Verifier extends model.PaymentVerifier {
 		threeDSServerTransID: string
 	) {
 		let result: model.PaymentVerifier.Response | gracely.Error
-		const paymentType: "card" | "account" | "create account" =
-			request.payment.type == "account" && model.Item.amount(request.items) == 0
-				? "create account"
-				: cardToken.type == "recurring"
-				? "account"
-				: "card"
-		let authRequest: api.auth.Request = {
-			deviceChannel: "02",
-			messageCategory: paymentType != "create account" ? "01" : "02",
-			messageType: "AReq",
-			messageVersion: "2.1.0",
-			threeDSRequestorURL: "https://payfunc.com/about/contact/",
-			threeDSServerTransID,
-			threeDSRequestorAuthenticationInd:
-				paymentType == "account"
-					? "02" // Recurring transaction
-					: paymentType == "create account"
-					? "04" // Add card
-					: "01", // Payment transaction
-			threeDSCompInd: "Y",
-			transType: "01",
-		}
-		if (paymentType != "create account") {
-			const decimals = isoly.Currency.decimalDigits(request.currency) ?? 0
-			const amount = Math.round(
-				model.Item.amount(request.payment.type == "card" ? request.payment.amount ?? request.items : request.items) *
-					10 ** decimals
-			)
-			authRequest.purchaseAmount = amount.toString()
-			authRequest.purchaseCurrency = isoly.CurrencyCode.from(request.currency)
-			authRequest.purchaseExponent = decimals.toString()
-			authRequest.purchaseDate = ch3d2.api.model.PreciseTime.from(isoly.DateTime.now())
-			if (paymentType == "card" && authRequest.deviceChannel != "03")
-				authRequest.threeDSRequestorChallengeInd = "04" // "04" - We require challenge as auth is only run when additional verification is required.
-		} else
-			authRequest.threeDSRequestorChallengeInd = "04" // "04" - We require challenge when creating an account.
-		authRequest = this.appendCustomerData(request.customer, authRequest)
-		const authResponse = await ch3d2.auth(key, merchant, authRequest, token)
+		const authResponse = await ch3d2.auth(
+			key,
+			merchant,
+			api.auth.Request.generate(request, cardToken, threeDSServerTransID),
+			token
+		)
 		if (logFunction)
 			logFunction("ch3d2.auth", "trace", { token, response: authResponse })
 		if (gracely.Error.is(authResponse))
@@ -166,25 +133,6 @@ export class Verifier extends model.PaymentVerifier {
 		else
 			result = gracely.server.backendFailure("ch3d2.verify auth failed with unknown error")
 		return result
-	}
-
-	private appendCustomerData(customer: model.Customer | undefined, authRequest: api.auth.Request) {
-		if (customer) {
-			if (customer.address)
-				authRequest = { ...authRequest, ...ch3d2.api.convert.convertAddress(customer.address) }
-			if (customer.email) {
-				const email = model.EmailAddresses.get(customer.email, "primary", "billing")
-				if (email)
-					authRequest.email = email
-			}
-			if (customer.phone) {
-				authRequest = {
-					...authRequest,
-					...ch3d2.api.convert.convertPhone(customer.phone, customer.address),
-				}
-			}
-		}
-		return authRequest
 	}
 
 	private async preauth(

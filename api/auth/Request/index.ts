@@ -1,18 +1,18 @@
 import * as gracely from "gracely"
 import * as isoly from "isoly"
 import { isIPv4, isIPv6 } from "net"
-import * as api from "../index"
-import { AcctInfo } from "../model/AcctInfo"
-import { Currency } from "../model/Currency"
-import { Date } from "../model/Date"
-import { DeviceRenderOptions } from "../model/DeviceRenderOptions"
-import { MerchantRiskIndicator } from "../model/MerchantRiskIndicator"
-import { MessageExtension } from "../model/MessageExtension"
-import { PhoneNumber } from "../model/PhoneNumber"
-import { PreciseTime } from "../model/PreciseTime"
-import { ShortDate } from "../model/ShortDate"
-import { ThreeDSRequestorAuthenticationInfo } from "../model/ThreeDSRequestorAuthenticationInfo"
-import { ThreeDSRequestorPriorAuthenticationInfo } from "../model/ThreeDSRequestorPriorAuthenticationInfo"
+import { AcctInfo } from "../../model/AcctInfo"
+import { Currency } from "../../model/Currency"
+import { Date } from "../../model/Date"
+import { DeviceRenderOptions } from "../../model/DeviceRenderOptions"
+import { MerchantRiskIndicator } from "../../model/MerchantRiskIndicator"
+import { MessageExtension } from "../../model/MessageExtension"
+import { PhoneNumber } from "../../model/PhoneNumber"
+import { PreciseTime } from "../../model/PreciseTime"
+import { ShortDate } from "../../model/ShortDate"
+import { ThreeDSRequestorAuthenticationInfo } from "../../model/ThreeDSRequestorAuthenticationInfo"
+import { ThreeDSRequestorPriorAuthenticationInfo } from "../../model/ThreeDSRequestorPriorAuthenticationInfo"
+import { generate as generateRequest } from "./generate"
 
 export interface Request {
 	acctID?: string
@@ -33,6 +33,7 @@ export interface Request {
 	browserColorDepth?: "1" | "4" | "8" | "15" | "16" | "24" | "32" | "48"
 	browserIP?: string
 	browserJavaEnabled?: boolean
+	browserJavascriptEnabled?: boolean
 	browserLanguage?: string
 	browserScreenHeight?: string
 	browserScreenWidth?: string
@@ -166,9 +167,7 @@ export interface Request {
 }
 
 export namespace Request {
-	export function limit(
-		value: Partial<api.auth.Request> | api.auth.Request
-	): Partial<api.auth.Request> | api.auth.Request {
+	export function limit(value: Partial<Request> | Request): Partial<Request> | Request {
 		if (value.billAddrCity)
 			value.billAddrCity = trim(value.billAddrCity, 50)
 		if (value.billAddrLine1)
@@ -238,19 +237,21 @@ export namespace Request {
 				(typeof value.browserIP == "string" &&
 					value.browserIP.length <= 45 &&
 					(isIPv4(value.browserIP) || isIPv6(value.browserIP)))) &&
-			((value.deviceChannel != "02" && value.browserAcceptHeader == undefined) ||
+			((value.deviceChannel != "02" && value.browserJavaEnabled == undefined) ||
 				typeof value.browserJavaEnabled == "boolean") &&
-			((value.deviceChannel != "02" && value.browserAcceptHeader == undefined) ||
+			((value.deviceChannel != "02" && value.browserJavascriptEnabled == undefined) ||
+				typeof value.browserJavascriptEnabled == "boolean") &&
+			((value.deviceChannel != "02" && value.browserLanguage == undefined) ||
 				(typeof value.browserLanguage == "string" &&
 					value.browserLanguage.length >= 1 &&
 					value.browserLanguage.length <= 8)) &&
-			((value.deviceChannel != "02" && value.browserAcceptHeader == undefined) ||
+			((value.deviceChannel != "02" && value.browserScreenHeight == undefined) ||
 				(typeof value.browserScreenHeight == "string" && /^[0-9]{1,6}$/.test(value.browserScreenHeight))) &&
-			((value.deviceChannel != "02" && value.browserAcceptHeader == undefined) ||
+			((value.deviceChannel != "02" && value.browserScreenWidth == undefined) ||
 				(typeof value.browserScreenWidth == "string" && /^[0-9]{1,6}$/.test(value.browserScreenWidth))) &&
-			((value.deviceChannel != "02" && value.browserAcceptHeader == undefined) ||
+			((value.deviceChannel != "02" && value.browserTZ == undefined) ||
 				(typeof value.browserTZ == "string" && /^[+-]?[0-9]{1,4}$/.test(value.browserTZ))) &&
-			((value.deviceChannel != "02" && value.browserAcceptHeader == undefined) ||
+			((value.deviceChannel != "02" && value.browserUserAgent == undefined) ||
 				(typeof value.browserUserAgent == "string" && value.browserUserAgent.length <= 2048)) &&
 			(value.cardExpiryDate == undefined || ShortDate.is(value.cardExpiryDate)) &&
 			(value.cardholderName == undefined ||
@@ -453,31 +454,36 @@ export namespace Request {
 									property: "browserIP",
 									type: "string | undefined",
 								},
-							(value.deviceChannel != "02" && value.browserAcceptHeader == undefined) ||
+							(value.deviceChannel != "02" && value.browserJavaEnabled == undefined) ||
 								typeof value.browserJavaEnabled == "boolean" || {
 									property: "browserJavaEnabled",
 									type: "boolean | undefined",
 								},
-							(value.deviceChannel != "02" && value.browserAcceptHeader == undefined) ||
+							(value.deviceChannel != "02" && value.browserJavascriptEnabled == undefined) ||
+								typeof value.browserJavascriptEnabled == "boolean" || {
+									property: "browserJavascriptEnabled",
+									type: "boolean | undefined",
+								},
+							(value.deviceChannel != "02" && value.browserLanguage == undefined) ||
 								(typeof value.browserLanguage == "string" &&
 									value.browserLanguage.length >= 1 &&
 									value.browserLanguage.length <= 8) || { property: "browserLanguage", type: "string | undefined" },
-							(value.deviceChannel != "02" && value.browserAcceptHeader == undefined) ||
+							(value.deviceChannel != "02" && value.browserScreenHeight == undefined) ||
 								(typeof value.browserScreenHeight == "string" && /^[0-9]{1,6}$/.test(value.browserScreenHeight)) || {
 									property: "browserScreenHeight",
 									type: "string | undefined",
 								},
-							(value.deviceChannel != "02" && value.browserAcceptHeader == undefined) ||
+							(value.deviceChannel != "02" && value.browserScreenWidth == undefined) ||
 								(typeof value.browserScreenWidth == "string" && /^[0-9]{1,6}$/.test(value.browserScreenWidth)) || {
 									property: "browserScreenWidth",
 									type: "string | undefined",
 								},
-							(value.deviceChannel != "02" && value.browserAcceptHeader == undefined) ||
+							(value.deviceChannel != "02" && value.browserTZ == undefined) ||
 								(typeof value.browserTZ == "string" && /^[+-]?[0-9]{1,4}$/.test(value.browserTZ)) || {
 									property: "browserTZ",
 									type: "string | undefined",
 								},
-							(value.deviceChannel != "02" && value.browserAcceptHeader == undefined) ||
+							(value.deviceChannel != "02" && value.browserUserAgent == undefined) ||
 								(typeof value.browserUserAgent == "string" && value.browserUserAgent.length <= 2048) || {
 									property: "browserUserAgent",
 									type: "string | undefined",
@@ -709,6 +715,7 @@ export namespace Request {
 					  ].filter(gracely.Flaw.is) as gracely.Flaw[]),
 		}
 	}
+	export const generate = generateRequest
 	function trim(value: string | undefined, maxLength: number): string | undefined {
 		value = value ? value.trim() : value
 		return value ? (value.length > maxLength ? value.substring(0, maxLength) : value) : undefined

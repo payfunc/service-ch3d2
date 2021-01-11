@@ -1,4 +1,5 @@
 import { convertAddress } from "./address"
+import { convertBrowser } from "./browser"
 import { convertPhone } from "./phoneNumber"
 
-export { convertAddress, convertPhone }
+export { convertAddress, convertBrowser, convertPhone }

@@ -1,9 +1,41 @@
+import * as cardModel from "@payfunc/model-card"
 import * as model from "@payfunc/model"
 import { Request } from "../auth"
 import * as browserApi from "./browser"
 
 describe("browser tests", () => {
 	it("convertBrowser tests", () => {
+		const merchant: model.Key & { card: cardModel.Merchant.Card } = {
+			aud: "public",
+			iat: 1610963935,
+			iss: "http://localhost:7071",
+			sub: "testtest",
+			name: "Test Merchant",
+			url: "http://example.com",
+			token: "not.important.here",
+			card: {
+				url: "http://localhost:7082",
+				id: "test",
+				country: "SE",
+				acquirer: {
+					url: "https://not.important.here/3d",
+					key: "example-key",
+					protocol: "clearhaus",
+					bin: {
+						mastercard: "1234",
+						visa: "1234",
+					},
+				},
+			},
+		}
+		const card: cardModel.Card.Token = {
+			card: "12345678",
+			type: "single use",
+			expires: [12, 28],
+			iin: "123456",
+			last4: "1234",
+			scheme: "visa",
+		}
 		const browserCreatable: model.Browser.Creatable = {
 			colorDepth: 32,
 			java: false,
@@ -28,6 +60,8 @@ describe("browser tests", () => {
 			browserScreenHeight: "1080",
 			browserScreenWidth: "1920",
 			browserTZ: "60",
+			notificationURL:
+				"http://localhost:7082/card/12345678/verification?mode=iframe&merchant=test&parent=https%3A%2F%2Fcheckout.payfunc.com",
 		}
 		const output: Partial<Request> = {
 			...creatableOutput,
@@ -38,14 +72,14 @@ describe("browser tests", () => {
 			...output,
 			browserJavascriptEnabled: true,
 		}
-		expect(browserApi.convertBrowser(browserCreatable)).toEqual(creatableOutput)
-		expect(browserApi.convertBrowser({ ...browserCreatable, colorDepth: 30 })).toEqual({
+		expect(browserApi.convertBrowser(merchant, card, browserCreatable)).toEqual(creatableOutput)
+		expect(browserApi.convertBrowser(merchant, card, { ...browserCreatable, colorDepth: 30 })).toEqual({
 			...creatableOutput,
 			browserColorDepth: "24",
 		})
-		expect(browserApi.convertBrowser(browser)).toEqual(output)
-		expect(browserApi.convertBrowser(browser220, "2.1.0")).toEqual(output)
-		expect(browserApi.convertBrowser(browser220, "2.2.0")).toEqual(output220)
+		expect(browserApi.convertBrowser(merchant, card, browser)).toEqual(output)
+		expect(browserApi.convertBrowser(merchant, card, browser220, "2.1.0")).toEqual(output)
+		expect(browserApi.convertBrowser(merchant, card, browser220, "2.2.0")).toEqual(output220)
 	})
 	it("colorDepth tests", () => {
 		expect(browserApi.getColorDepth(NaN)).toEqual("24")

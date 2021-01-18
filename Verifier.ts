@@ -18,7 +18,7 @@ export class Verifier extends model.PaymentVerifier {
 	): Promise<model.PaymentVerifier.Response> {
 		let result: model.PaymentVerifier.Response | gracely.Error | string | undefined
 		const merchant = await model.Key.unpack(key)
-		if (!merchant)
+		if (!merchant || !merchant.card)
 			result = gracely.client.unauthorized()
 		else {
 			const token: authly.Token | undefined =
@@ -35,7 +35,15 @@ export class Verifier extends model.PaymentVerifier {
 				if (!cardToken.verification && force)
 					result = await this.preauth(key, merchant, token, logFunction)
 				if ((threeDSServerTransID = this.getVerificationId("method", cardToken, force, result)))
-					result = await this.auth(key, merchant, token, cardToken, logFunction, request, threeDSServerTransID)
+					result = await this.auth(
+						key,
+						merchant as model.Key & { card: card.Merchant.Card },
+						token,
+						cardToken,
+						logFunction,
+						request,
+						threeDSServerTransID
+					)
 				else if ((threeDSServerTransID = this.getVerificationId("challenge", cardToken, force, result)))
 					result = await this.postauth(key, merchant, token, logFunction, threeDSServerTransID)
 				else if (typeof result == "string")
@@ -94,7 +102,7 @@ export class Verifier extends model.PaymentVerifier {
 
 	private async auth(
 		key: string,
-		merchant: model.Key,
+		merchant: model.Key & { card: card.Merchant.Card },
 		token: string,
 		cardToken: card.Card.Token,
 		logFunction:
@@ -107,7 +115,7 @@ export class Verifier extends model.PaymentVerifier {
 		const authResponse = await ch3d2.auth(
 			key,
 			merchant,
-			api.auth.Request.generate(request, cardToken, threeDSServerTransID),
+			api.auth.Request.generate(merchant, request, cardToken, threeDSServerTransID),
 			token
 		)
 		if (logFunction)

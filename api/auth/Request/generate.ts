@@ -4,6 +4,7 @@ import * as model from "@payfunc/model"
 import * as api from "../../../api"
 
 export function generate(
+	merchant: model.Key & { card: card.Merchant.Card },
 	request: model.PaymentVerifier.Request,
 	cardToken: card.Card.Token,
 	threeDSServerTransID: string
@@ -52,7 +53,7 @@ export function generate(
 	)
 		authRequest = {
 			...authRequest,
-			...api.convert.convertBrowser(request.payment.client.browser, authRequest.messageVersion),
+			...api.convert.convertBrowser(merchant, cardToken, request.payment.client.browser, authRequest.messageVersion),
 		}
 	return authRequest
 }

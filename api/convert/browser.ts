@@ -1,7 +1,10 @@
+import * as cardModel from "@payfunc/model-card"
 import * as model from "@payfunc/model"
 import { Request as AuthRequest } from "../auth"
 
 export function convertBrowser(
+	merchant: model.Key & { card: cardModel.Merchant.Card },
+	card: cardModel.Card.Token,
 	browser: model.Browser | model.Browser.Creatable | undefined,
 	messageVersion?: "2.1.0" | "2.2.0"
 ): Partial<AuthRequest> {
@@ -15,6 +18,14 @@ export function convertBrowser(
 			browser?.timezone && browser.timezone.toString().match(/^[+-]?[0-9]{1,4}$/)
 				? browser.timezone.toString()
 				: "+0000",
+		notificationURL:
+			merchant.card.url +
+			"/card/" +
+			card.card +
+			"/verification?mode=iframe&merchant=" +
+			(merchant.card.id ?? merchant.sub) +
+			"&parent=" +
+			encodeURIComponent(browser?.parent ?? ""),
 	}
 	if (messageVersion && messageVersion != "2.1.0")
 		result = {

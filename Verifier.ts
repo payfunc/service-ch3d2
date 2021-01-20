@@ -31,10 +31,10 @@ export class Verifier extends model.PaymentVerifier {
 			if (!token || !cardToken)
 				result = gracely.client.malformedContent("request.payment.card", "model.Card.Token", "not a card token")
 			else {
-				let threeDSServerTransID: string | undefined
+				let transactionId: string | undefined
 				if (!cardToken.verification && force)
 					result = await this.preauthenticate(key, merchant, token, logFunction)
-				if ((threeDSServerTransID = this.getVerificationId("method", cardToken, force, result)))
+				if ((transactionId = this.getVerificationId("method", cardToken, force, result)))
 					result = await this.authenticate(
 						key,
 						merchant as model.Key & { card: card.Merchant.Card },
@@ -42,10 +42,10 @@ export class Verifier extends model.PaymentVerifier {
 						request.reference.type == "account" ? "create account" : request.reference.account ? "account" : "card",
 						logFunction,
 						request,
-						threeDSServerTransID
+						transactionId
 					)
-				else if ((threeDSServerTransID = this.getVerificationId("challenge", cardToken, force, result)))
-					result = await this.postauthenticate(key, merchant, token, logFunction, threeDSServerTransID)
+				else if ((transactionId = this.getVerificationId("challenge", cardToken, force, result)))
+					result = await this.postauthenticate(key, merchant, token, logFunction, transactionId)
 				else if (typeof result == "string")
 					result = gracely.server.backendFailure("result as string unhandled: ", result)
 				else if (!result)
@@ -56,12 +56,12 @@ export class Verifier extends model.PaymentVerifier {
 	}
 	private getVerificationId(
 		type: "method" | "challenge",
-		cardToken: card.Card.Token,
+		token: card.Card.Token,
 		force: boolean | undefined,
 		result: model.PaymentVerifier.Response | gracely.Error | string | undefined
 	) {
-		return cardToken.verification?.type == type && typeof cardToken.verification.data == "object" && !force
-			? cardToken.verification.data.threeDSServerTransID
+		return token.verification?.type == type && typeof token.verification.data == "object" && !force
+			? token.verification.data.threeDSServerTransID
 			: typeof result == "string" && ((type == "method" && force) || (type == "challenge" && !force))
 			? result
 			: undefined
@@ -74,11 +74,11 @@ export class Verifier extends model.PaymentVerifier {
 		logFunction:
 			| ((step: string, level: "trace" | "debug" | "warning" | "error" | "fatal", content: any) => void)
 			| undefined,
-		threeDSServerTransID: string
+		transactionId: string
 	) {
 		let result: model.PaymentVerifier.Response | gracely.Error
 		const postauthRequest: api.postauth.Request = {
-			threeDSServerTransID,
+			threeDSServerTransID: transactionId,
 		}
 		const postauthResponse = await ch3d2.postauth(key, merchant, postauthRequest, token)
 		if (logFunction)

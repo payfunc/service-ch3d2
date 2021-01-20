@@ -33,9 +33,9 @@ export class Verifier extends model.PaymentVerifier {
 			else {
 				let threeDSServerTransID: string | undefined
 				if (!cardToken.verification && force)
-					result = await this.preauth(key, merchant, token, logFunction)
+					result = await this.preauthenticate(key, merchant, token, logFunction)
 				if ((threeDSServerTransID = this.getVerificationId("method", cardToken, force, result)))
-					result = await this.auth(
+					result = await this.authenticate(
 						key,
 						merchant as model.Key & { card: card.Merchant.Card },
 						{ ...cardToken, token },
@@ -45,7 +45,7 @@ export class Verifier extends model.PaymentVerifier {
 						threeDSServerTransID
 					)
 				else if ((threeDSServerTransID = this.getVerificationId("challenge", cardToken, force, result)))
-					result = await this.postauth(key, merchant, token, logFunction, threeDSServerTransID)
+					result = await this.postauthenticate(key, merchant, token, logFunction, threeDSServerTransID)
 				else if (typeof result == "string")
 					result = gracely.server.backendFailure("result as string unhandled: ", result)
 				else if (!result)
@@ -67,7 +67,7 @@ export class Verifier extends model.PaymentVerifier {
 			: undefined
 	}
 
-	private async postauth(
+	private async postauthenticate(
 		key: authly.Token,
 		merchant: model.Key,
 		token: string,
@@ -100,7 +100,7 @@ export class Verifier extends model.PaymentVerifier {
 		return result
 	}
 
-	private async auth(
+	private async authenticate(
 		key: string,
 		merchant: model.Key & { card: card.Merchant.Card },
 		cardToken: card.Card.Token & { token: authly.Token },
@@ -156,7 +156,7 @@ export class Verifier extends model.PaymentVerifier {
 		return result
 	}
 
-	private async preauth(
+	private async preauthenticate(
 		key: string,
 		merchant: model.Key,
 		token: string,

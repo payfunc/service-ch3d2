@@ -18,7 +18,7 @@ export class Verifier extends model.PaymentVerifier {
 	): Promise<model.PaymentVerifier.Response> {
 		let result: model.PaymentVerifier.Response | gracely.Error | string | undefined
 		const merchant = await model.Key.unpack(key)
-		if (!merchant)
+		if (!merchant || !merchant.card)
 			result = gracely.client.unauthorized()
 		else {
 			const token: authly.Token | undefined =
@@ -31,13 +31,21 @@ export class Verifier extends model.PaymentVerifier {
 			if (!token || !cardToken)
 				result = gracely.client.malformedContent("request.payment.card", "model.Card.Token", "not a card token")
 			else {
-				let threeDSServerTransID: string | undefined
+				let transactionId: string | undefined
 				if (!cardToken.verification && force)
-					result = await this.preauth(key, merchant, token, logFunction)
-				if ((threeDSServerTransID = this.getVerificationId("method", cardToken, force, result)))
-					result = await this.auth(key, merchant, token, cardToken, logFunction, request, threeDSServerTransID)
-				else if ((threeDSServerTransID = this.getVerificationId("challenge", cardToken, force, result)))
-					result = await this.postauth(key, merchant, token, logFunction, threeDSServerTransID)
+					result = await this.preauthenticate(key, merchant, token, logFunction)
+				if ((transactionId = this.getVerificationId("method", cardToken, force, result)))
+					result = await this.authenticate(
+						key,
+						merchant as model.Key & { card: card.Merchant.Card },
+						{ ...cardToken, token },
+						request.reference.type == "account" ? "create account" : request.reference.account ? "account" : "card",
+						logFunction,
+						request,
+						transactionId
+					)
+				else if ((transactionId = this.getVerificationId("challenge", cardToken, force, result)))
+					result = await this.postauthenticate(key, merchant, token, logFunction, transactionId)
 				else if (typeof result == "string")
 					result = gracely.server.backendFailure("result as string unhandled: ", result)
 				else if (!result)
@@ -48,29 +56,29 @@ export class Verifier extends model.PaymentVerifier {
 	}
 	private getVerificationId(
 		type: "method" | "challenge",
-		cardToken: card.Card.Token,
+		token: card.Card.Token,
 		force: boolean | undefined,
 		result: model.PaymentVerifier.Response | gracely.Error | string | undefined
 	) {
-		return cardToken.verification?.type == type && typeof cardToken.verification.data == "object" && !force
-			? cardToken.verification.data.threeDSServerTransID
+		return token.verification?.type == type && typeof token.verification.data == "object" && !force
+			? token.verification.data.threeDSServerTransID
 			: typeof result == "string" && ((type == "method" && force) || (type == "challenge" && !force))
 			? result
 			: undefined
 	}
 
-	private async postauth(
+	private async postauthenticate(
 		key: authly.Token,
 		merchant: model.Key,
 		token: string,
 		logFunction:
 			| ((step: string, level: "trace" | "debug" | "warning" | "error" | "fatal", content: any) => void)
 			| undefined,
-		threeDSServerTransID: string
+		transactionId: string
 	) {
 		let result: model.PaymentVerifier.Response | gracely.Error
 		const postauthRequest: api.postauth.Request = {
-			threeDSServerTransID,
+			threeDSServerTransID: transactionId,
 		}
 		const postauthResponse = await ch3d2.postauth(key, merchant, postauthRequest, token)
 		if (logFunction)
@@ -92,11 +100,11 @@ export class Verifier extends model.PaymentVerifier {
 		return result
 	}
 
-	private async auth(
+	private async authenticate(
 		key: string,
-		merchant: model.Key,
-		token: string,
-		cardToken: card.Card.Token,
+		merchant: model.Key & { card: card.Merchant.Card },
+		cardToken: card.Card.Token & { token: authly.Token },
+		paymentType: "card" | "account" | "create account",
 		logFunction:
 			| ((step: string, level: "trace" | "debug" | "warning" | "error" | "fatal", content: any) => void)
 			| undefined,
@@ -107,11 +115,24 @@ export class Verifier extends model.PaymentVerifier {
 		const authResponse = await ch3d2.auth(
 			key,
 			merchant,
-			api.auth.Request.generate(request, cardToken, threeDSServerTransID),
-			token
+			api.auth.Request.generate(
+				request,
+				card.Card.Token.getVerificationTarget(
+					cardToken,
+					merchant.card.url,
+					(request.payment.type == "card" &&
+						model.Payment.Card.Creatable.is(request.payment) &&
+						request.payment.client?.browser &&
+						request.payment.client.browser.parent) ||
+						""
+				),
+				paymentType,
+				threeDSServerTransID
+			),
+			cardToken.token
 		)
 		if (logFunction)
-			logFunction("ch3d2.auth", "trace", { token, response: authResponse })
+			logFunction("ch3d2.auth", "trace", { token: cardToken.token, response: authResponse })
 		if (gracely.Error.is(authResponse))
 			result = authResponse
 		else if (api.Error.is(authResponse))
@@ -135,7 +156,7 @@ export class Verifier extends model.PaymentVerifier {
 		return result
 	}
 
-	private async preauth(
+	private async preauthenticate(
 		key: string,
 		merchant: model.Key,
 		token: string,

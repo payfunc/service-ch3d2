@@ -1,6 +1,6 @@
 {
 	"name": "@payfunc/service-ch3d2",
-	"version": "0.0.33",
+	"version": "0.1.0",
 	"description": "Service library for using emv3d2.",
 	"author": "PayFunc",
 	"license": "MIT",
@@ -19,6 +19,12 @@
 		"release": true
 	},
 	"jest": {
+		"transform": {
+			"^.+\\.(j|t)sx?$": "ts-jest"
+		},
+		"transformIgnorePatterns": [
+			"<rootDir>/node_modules/(?!(cryptly|authly|@payfunc|gracely|isoly|servly)/.*)"
+		],
 		"globals": {
 			"ts-jest": {
 				"tsConfig": "tsconfig.test.json"
@@ -43,25 +49,23 @@
 		"lint": "eslint '*/**/*.{js,ts,tsx}'",
 		"fix": "eslint '*/**/*.{js,ts,tsx}' --fix",
 		"build": "tsc -p .",
-		"test": "jest",
+		"test": "jest --maxWorkers=2",
 		"test:watch": "watch jest",
 		"prepare": "npm run build",
 		"clean": "rm -rf dist node_modules coverage"
 	},
 	"dependencies": {
-		"@payfunc/model-card": "0.1.11",
-		"@payfunc/model": "0.2.39",
-		"authly": "0.0.40",
+		"@payfunc/model-card": "^0.2.5",
+		"@payfunc/model": "0.3.1",
+		"authly": "^0.2.3",
 		"form-urlencoded": "^4.2.1",
-		"gracely": "0.0.37",
-		"isoly": "0.0.19",
-		"node-fetch": "^2.6.1"
+		"gracely": "^0.0.39",
+		"isoly": "^0.0.26"
 	},
 	"devDependencies": {
 		"@types/form-urlencoded": "^2.0.1",
 		"@types/jest": "^26.0.0",
 		"@types/node": "^14.0.13",
-		"@types/node-fetch": "^2.5.7",
 		"@typescript-eslint/eslint-plugin": "^3.7.1",
 		"@typescript-eslint/parser": "^3.7.1",
 		"babel-core": "^6.26.3",

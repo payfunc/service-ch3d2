@@ -43,14 +43,14 @@
 		"lint": "eslint '*/**/*.{js,ts,tsx}'",
 		"fix": "eslint '*/**/*.{js,ts,tsx}' --fix",
 		"build": "tsc -p .",
-    "test": "jest --maxWorkers=2",
+		"test": "jest --maxWorkers=2",
 		"test:watch": "watch jest",
 		"prepare": "npm run build",
 		"clean": "rm -rf dist node_modules coverage"
 	},
 	"dependencies": {
-		"@payfunc/model-card": "^0.1.12",
-		"@payfunc/model": "0.2.39",
+		"@payfunc/model-card": "payfunc/model-card#master-0.0",
+		"@payfunc/model": "payfunc/model#master-0.2",
 		"authly": "^0.1.7",
 		"form-urlencoded": "^4.2.1",
 		"gracely": "0.0.37",

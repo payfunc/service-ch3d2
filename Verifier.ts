@@ -75,25 +75,22 @@ export class Verifier extends model.PaymentVerifier {
 			| ((step: string, level: "trace" | "debug" | "warning" | "error" | "fatal", content: any) => void)
 			| undefined,
 		transactionId: string
-	) {
+	): Promise<model.PaymentVerifier.Response | gracely.Error> {
 		let result: model.PaymentVerifier.Response | gracely.Error
-		const postauthRequest: api.postauth.Request = {
+		const request: api.postauth.Request = {
 			threeDSServerTransID: transactionId,
 		}
-		const postauthResponse = await ch3d2.postauth(key, merchant, postauthRequest, token)
+		const response = await ch3d2.postauth(key, merchant, request, token)
 		if (logFunction)
-			logFunction("ch3d2.postauth", "trace", { token, response: postauthResponse })
-		if (gracely.Error.is(postauthResponse))
-			result = postauthResponse
-		else if (api.Error.is(postauthResponse))
-			result = gracely.server.backendFailure(
-				"ch3d2.verify postauth responsed with error code:",
-				postauthResponse.errorCode
-			)
-		else if (api.postauth.Response.is(postauthResponse))
+			logFunction("ch3d2.postauth", "trace", { token, response: response })
+		if (gracely.Error.is(response))
+			result = response
+		else if (api.Error.is(response))
+			result = gracely.server.backendFailure("ch3d2.verify postauth responsed with error code:", response.errorCode)
+		else if (api.postauth.Response.is(response))
 			result =
-				postauthResponse.transStatus == "Y" || postauthResponse.transStatus == "A"
-					? model.PaymentVerifier.Response.verified()
+				response.transStatus == "Y" || response.transStatus == "A"
+					? model.PaymentVerifier.Response.verified(response.payfunc?.token)
 					: (result = gracely.client.malformedContent("Card.Token", "string", "3D Secure Failed."))
 		else
 			result = gracely.server.backendFailure("ch3d2.verify postauth failed with unknown error")
@@ -110,9 +107,9 @@ export class Verifier extends model.PaymentVerifier {
 			| undefined,
 		request: model.PaymentVerifier.Request,
 		threeDSServerTransID: string
-	) {
+	): Promise<model.PaymentVerifier.Response | gracely.Error> {
 		let result: model.PaymentVerifier.Response | gracely.Error
-		const authResponse = await ch3d2.auth(
+		const response = await ch3d2.auth(
 			key,
 			merchant,
 			api.auth.Request.generate(
@@ -132,21 +129,21 @@ export class Verifier extends model.PaymentVerifier {
 			cardToken.token
 		)
 		if (logFunction)
-			logFunction("ch3d2.auth", "trace", { token: cardToken.token, response: authResponse })
-		if (gracely.Error.is(authResponse))
-			result = authResponse
-		else if (api.Error.is(authResponse))
-			result = gracely.server.backendFailure("ch3d2.verify auth responsed with error code:", authResponse.errorCode)
-		else if (api.auth.Response.is(authResponse))
+			logFunction("ch3d2.auth", "trace", { token: cardToken.token, response: response })
+		if (gracely.Error.is(response))
+			result = response
+		else if (api.Error.is(response))
+			result = gracely.server.backendFailure("ch3d2.verify auth responsed with error code:", response.errorCode)
+		else if (api.auth.Response.is(response))
 			result =
-				authResponse.transStatus == "Y" || authResponse.transStatus == "A"
-					? model.PaymentVerifier.Response.verified()
-					: authResponse.transStatus == "C"
-					? model.PaymentVerifier.Response.verificationRequired(true, "POST", authResponse.acsURL ?? "", {
+				response.transStatus == "Y" || response.transStatus == "A"
+					? model.PaymentVerifier.Response.verified(response.payfunc?.token)
+					: response.transStatus == "C"
+					? model.PaymentVerifier.Response.verificationRequired(true, "POST", response.acsURL ?? "", {
 							type: "challenge",
-							threeDSServerTransID: authResponse.threeDSServerTransID,
-							acsTransID: authResponse.acsTransID,
-							messageVersion: authResponse.messageVersion,
+							threeDSServerTransID: response.threeDSServerTransID,
+							acsTransID: response.acsTransID,
+							messageVersion: response.messageVersion,
 							messageType: "CReq",
 							challengeWindowSize: "01",
 					  })

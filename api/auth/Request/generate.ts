@@ -1,19 +1,13 @@
 import * as isoly from "isoly"
-import * as card from "@payfunc/model-card"
 import * as model from "@payfunc/model"
 import * as api from "../../../api"
 
 export function generate(
 	request: model.PaymentVerifier.Request,
-	cardToken: card.Card.Token,
+	notificationURL: string,
+	paymentType: "card" | "account" | "create account",
 	threeDSServerTransID: string
-) {
-	const paymentType: "card" | "account" | "create account" =
-		request.payment.type == "account" && model.Item.amount(request.items) == 0
-			? "create account"
-			: cardToken.type == "recurring"
-			? "account"
-			: "card"
+): api.auth.Request {
 	let authRequest: api.auth.Request = {
 		deviceChannel: "02",
 		messageCategory: paymentType != "create account" ? "01" : "02",
@@ -53,6 +47,7 @@ export function generate(
 		authRequest = {
 			...authRequest,
 			...api.convert.convertBrowser(request.payment.client.browser, authRequest.messageVersion),
+			notificationURL,
 		}
 	return authRequest
 }

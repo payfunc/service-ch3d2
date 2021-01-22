@@ -1,5 +1,6 @@
 import * as gracely from "gracely"
 import * as authly from "authly"
+import * as card from "@payfunc/model-card"
 import { Configuration } from "../Configuration"
 import { Error } from "../Error"
 import * as connection from "../post"
@@ -11,7 +12,8 @@ async function post(
 	request: Request,
 	token: authly.Token
 ): Promise<Response | Error | gracely.Error> {
-	return connection.post<Request, Response | Error | gracely.Error>(configuration, `card/${token}/ch3d2/auth`, request)
+	const path = card.Card.Token.verify(token) ? `card/ch3d2/${token}/` : `card/${token}/ch3d2/`
+	return connection.post<Request, Response | Error | gracely.Error>(configuration, path + `auth`, request)
 }
 
 export { Request, Response, post }

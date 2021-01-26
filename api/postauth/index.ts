@@ -12,7 +12,7 @@ async function post(
 	request: Request,
 	token: authly.Token
 ): Promise<Response | Error | gracely.Error> {
-	const path = card.Card.Token.verify(token) ? `card/ch3d2/${token}/` : `card/${token}/ch3d2/`
+	const path = (await card.Card.Token.verify(token)) ? `card/ch3d2/${token}/` : `card/${token}/ch3d2/`
 	return connection.post<Request, Response | Error | gracely.Error>(configuration, path + `postauth`, request)
 }
 

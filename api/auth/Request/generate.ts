@@ -6,7 +6,7 @@ export function generate(
 	request: model.PaymentVerifier.Request,
 	notificationURL: string,
 	paymentType: "card" | "account" | "create account",
-	threeDSServerTransID: string
+	transactionId: string
 ): api.auth.Request {
 	let authRequest: api.auth.Request = {
 		deviceChannel: "02",
@@ -14,7 +14,7 @@ export function generate(
 		messageType: "AReq",
 		messageVersion: "2.1.0",
 		threeDSRequestorURL: "https://payfunc.com/about/contact/",
-		threeDSServerTransID,
+		threeDSServerTransID: transactionId,
 		threeDSRequestorAuthenticationInd:
 			paymentType == "account"
 				? "02" // Recurring transaction

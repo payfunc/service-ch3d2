@@ -115,7 +115,7 @@ export class Verifier extends model.PaymentVerifier {
 			| ((step: string, level: "trace" | "debug" | "warning" | "error" | "fatal", content: any) => void)
 			| undefined,
 		request: model.PaymentVerifier.Request,
-		threeDSServerTransID: string
+		transactionId: string
 	) {
 		let result: model.PaymentVerifier.Response | gracely.Error
 		const parent =
@@ -139,7 +139,7 @@ export class Verifier extends model.PaymentVerifier {
 							"&parent=" +
 							encodeURIComponent(parent),
 				paymentType,
-				threeDSServerTransID
+				transactionId
 			),
 			cardToken.token
 		)

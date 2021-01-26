@@ -27,9 +27,15 @@ export class Verifier extends model.PaymentVerifier {
 					: request.payment.type == "card"
 					? request.payment.card
 					: undefined
-			const cardToken = token ? await card.Card.Token.verify(token) : undefined
+			const cardToken = token
+				? (await card.Card.Token.verify(token)) ?? (await card.Card.V1.Token.verify(token))
+				: undefined
 			if (!token || !cardToken)
-				result = gracely.client.malformedContent("request.payment.card", "model.Card.Token", "not a card token")
+				result = gracely.client.malformedContent(
+					"request.payment.card",
+					"model.Card.Token | model.Card.V1.Token",
+					"not a card token"
+				)
 			else {
 				let transactionId: string | undefined
 				if (!cardToken.verification && force)
@@ -56,7 +62,7 @@ export class Verifier extends model.PaymentVerifier {
 	}
 	private getVerificationId(
 		type: "method" | "challenge",
-		token: card.Card.Token,
+		token: card.Card.Token | card.Card.V1.Token,
 		force: boolean | undefined,
 		result: model.PaymentVerifier.Response | gracely.Error | string | undefined
 	) {
@@ -103,7 +109,7 @@ export class Verifier extends model.PaymentVerifier {
 	private async authenticate(
 		key: string,
 		merchant: model.Key & { card: card.Merchant.Card },
-		cardToken: card.Card.Token & { token: authly.Token },
+		cardToken: (card.Card.Token | card.Card.V1.Token) & { token: authly.Token },
 		paymentType: "card" | "account" | "create account",
 		logFunction:
 			| ((step: string, level: "trace" | "debug" | "warning" | "error" | "fatal", content: any) => void)
@@ -112,20 +118,26 @@ export class Verifier extends model.PaymentVerifier {
 		threeDSServerTransID: string
 	) {
 		let result: model.PaymentVerifier.Response | gracely.Error
+		const parent =
+			(request.payment.type == "card" &&
+				model.Payment.Card.Creatable.is(request.payment) &&
+				request.payment.client?.browser &&
+				request.payment.client.browser.parent) ||
+			""
 		const authResponse = await ch3d2.auth(
 			key,
 			merchant,
 			api.auth.Request.generate(
 				request,
-				card.Card.Token.getVerificationTarget(
-					cardToken,
-					merchant.card.url,
-					(request.payment.type == "card" &&
-						model.Payment.Card.Creatable.is(request.payment) &&
-						request.payment.client?.browser &&
-						request.payment.client.browser.parent) ||
-						""
-				),
+				card.Card.Token.is(cardToken)
+					? card.Card.Token.getVerificationTarget(cardToken, merchant.card.url, parent)
+					: merchant.card.url +
+							"/card/" +
+							cardToken.card +
+							"/verification?mode=iframe&merchant=" +
+							(merchant.card.id ?? merchant.sub) +
+							"&parent=" +
+							encodeURIComponent(parent),
 				paymentType,
 				threeDSServerTransID
 			),

@@ -1,6 +1,5 @@
 import * as gracely from "gracely"
 import * as isoly from "isoly"
-import { isIPv4, isIPv6 } from "net"
 import { AcctInfo } from "../../model/AcctInfo"
 import { Currency } from "../../model/Currency"
 import { Date } from "../../model/Date"
@@ -233,10 +232,7 @@ export namespace Request {
 			((value.deviceChannel != "02" && value.browserAcceptHeader == undefined) ||
 				(typeof value.browserColorDepth == "string" &&
 					["1", "4", "8", "15", "16", "24", "32", "48"].includes(value.browserColorDepth))) &&
-			(value.browserIP == undefined ||
-				(typeof value.browserIP == "string" &&
-					value.browserIP.length <= 45 &&
-					(isIPv4(value.browserIP) || isIPv6(value.browserIP)))) &&
+			(value.browserIP == undefined || (typeof value.browserIP == "string" && value.browserIP.length <= 45)) &&
 			((value.deviceChannel != "02" && value.browserJavaEnabled == undefined) ||
 				typeof value.browserJavaEnabled == "boolean") &&
 			((value.deviceChannel != "02" && value.browserJavascriptEnabled == undefined) ||
@@ -448,9 +444,7 @@ export namespace Request {
 									type: '"1" | "4" | "8" | "15" | "16" | "24" | "32" | "48" | undefined',
 								},
 							value.browserIP == undefined ||
-								(typeof value.browserIP == "string" &&
-									value.browserIP.length <= 45 &&
-									(isIPv4(value.browserIP) || isIPv6(value.browserIP))) || {
+								(typeof value.browserIP == "string" && value.browserIP.length <= 45) || {
 									property: "browserIP",
 									type: "string | undefined",
 								},

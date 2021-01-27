@@ -15,12 +15,8 @@ export function convertBrowser(
 			browser?.timezone && browser.timezone.toString().match(/^[+-]?[0-9]{1,4}$/)
 				? browser.timezone.toString()
 				: "+0000",
+		browserJavascriptEnabled: browser?.javascript ?? true,
 	}
-	if (messageVersion && messageVersion != "2.1.0")
-		result = {
-			...result,
-			browserJavascriptEnabled: browser?.javascript ?? true,
-		}
 	if (model.Browser.is(browser)) {
 		if (browser.acceptHeader)
 			result = { ...result, browserAcceptHeader: browser.acceptHeader }

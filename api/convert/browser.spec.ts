@@ -24,6 +24,7 @@ describe("browser tests", () => {
 		const creatableOutput: Partial<Request> = {
 			browserColorDepth: "32",
 			browserJavaEnabled: false,
+			browserJavascriptEnabled: true,
 			browserLanguage: "sv-SE",
 			browserScreenHeight: "1080",
 			browserScreenWidth: "1920",

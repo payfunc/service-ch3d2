@@ -56,7 +56,7 @@
 	},
 	"dependencies": {
 		"@payfunc/model-card": "^0.2.5",
-		"@payfunc/model": "payfunc/model#verifier-token",
+		"@payfunc/model": "0.3.2",
 		"authly": "^0.2.3",
 		"form-urlencoded": "^4.2.1",
 		"gracely": "^0.0.39",
@@ -70,7 +70,7 @@
 		"@typescript-eslint/parser": "^3.7.1",
 		"babel-core": "^6.26.3",
 		"babel-jest": "^26.1.0",
-		"eslint": "^7.6.0",
+		"eslint": "^7.18.0",
 		"eslint-plugin-prettierx": "github:nilssonemma/eslint-plugin-prettierx#master",
 		"eslint-plugin-simple-import-sort": "^7.0.0",
 		"jest": "^26",

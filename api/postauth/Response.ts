@@ -1,3 +1,4 @@
+import * as authly from "authly"
 import { AcsRenderingType } from "../model/AcsRenderingType"
 import { MessageExtension } from "../model/MessageExtension"
 
@@ -38,6 +39,7 @@ export interface Response {
 		| "19"
 		| "20"
 		| "21"
+	payfunc?: { token?: authly.Token }
 }
 
 export namespace Response {

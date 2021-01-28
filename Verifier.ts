@@ -27,9 +27,15 @@ export class Verifier extends model.PaymentVerifier {
 					: request.payment.type == "card"
 					? request.payment.card
 					: undefined
-			const cardToken = token ? await card.Card.Token.verify(token) : undefined
+			const cardToken = token
+				? (await card.Card.Token.verify(token)) ?? (await card.Card.V1.Token.verify(token))
+				: undefined
 			if (!token || !cardToken)
-				result = gracely.client.malformedContent("request.payment.card", "model.Card.Token", "not a card token")
+				result = gracely.client.malformedContent(
+					"request.payment.card",
+					"model.Card.Token | model.Card.V1.Token",
+					"not a card token"
+				)
 			else {
 				let transactionId: string | undefined
 				if (!cardToken.verification && force)
@@ -56,7 +62,7 @@ export class Verifier extends model.PaymentVerifier {
 	}
 	private getVerificationId(
 		type: "method" | "challenge",
-		token: card.Card.Token,
+		token: card.Card.Token | card.Card.V1.Token,
 		force: boolean | undefined,
 		result: model.PaymentVerifier.Response | gracely.Error | string | undefined
 	) {
@@ -75,25 +81,22 @@ export class Verifier extends model.PaymentVerifier {
 			| ((step: string, level: "trace" | "debug" | "warning" | "error" | "fatal", content: any) => void)
 			| undefined,
 		transactionId: string
-	) {
+	): Promise<model.PaymentVerifier.Response | gracely.Error> {
 		let result: model.PaymentVerifier.Response | gracely.Error
-		const postauthRequest: api.postauth.Request = {
+		const request: api.postauth.Request = {
 			threeDSServerTransID: transactionId,
 		}
-		const postauthResponse = await ch3d2.postauth(key, merchant, postauthRequest, token)
+		const response = await ch3d2.postauth(key, merchant, request, token)
 		if (logFunction)
-			logFunction("ch3d2.postauth", "trace", { token, response: postauthResponse })
-		if (gracely.Error.is(postauthResponse))
-			result = postauthResponse
-		else if (api.Error.is(postauthResponse))
-			result = gracely.server.backendFailure(
-				"ch3d2.verify postauth responsed with error code:",
-				postauthResponse.errorCode
-			)
-		else if (api.postauth.Response.is(postauthResponse))
+			logFunction("ch3d2.postauth", "trace", { token, response: response })
+		if (gracely.Error.is(response))
+			result = response
+		else if (api.Error.is(response))
+			result = gracely.server.backendFailure("ch3d2.verify postauth responsed with error code:", response.errorCode)
+		else if (api.postauth.Response.is(response))
 			result =
-				postauthResponse.transStatus == "Y" || postauthResponse.transStatus == "A"
-					? model.PaymentVerifier.Response.verified()
+				response.transStatus == "Y" || response.transStatus == "A"
+					? model.PaymentVerifier.Response.verified(response.payfunc?.token)
 					: (result = gracely.client.malformedContent("Card.Token", "string", "3D Secure Failed."))
 		else
 			result = gracely.server.backendFailure("ch3d2.verify postauth failed with unknown error")
@@ -103,50 +106,56 @@ export class Verifier extends model.PaymentVerifier {
 	private async authenticate(
 		key: string,
 		merchant: model.Key & { card: card.Merchant.Card },
-		cardToken: card.Card.Token & { token: authly.Token },
+		cardToken: (card.Card.Token | card.Card.V1.Token) & { token: authly.Token },
 		paymentType: "card" | "account" | "create account",
 		logFunction:
 			| ((step: string, level: "trace" | "debug" | "warning" | "error" | "fatal", content: any) => void)
 			| undefined,
 		request: model.PaymentVerifier.Request,
-		threeDSServerTransID: string
+		transactionId: string
 	) {
 		let result: model.PaymentVerifier.Response | gracely.Error
-		const authResponse = await ch3d2.auth(
+		const parent =
+			(request.payment.type == "card" &&
+				model.Payment.Card.Creatable.is(request.payment) &&
+				request.payment.client?.browser &&
+				request.payment.client.browser.parent) ||
+			""
+		const response = await ch3d2.auth(
 			key,
 			merchant,
 			api.auth.Request.generate(
 				request,
-				card.Card.Token.getVerificationTarget(
-					cardToken,
-					merchant.card.url,
-					(request.payment.type == "card" &&
-						model.Payment.Card.Creatable.is(request.payment) &&
-						request.payment.client?.browser &&
-						request.payment.client.browser.parent) ||
-						""
-				),
+				card.Card.Token.is(cardToken)
+					? card.Card.Token.getVerificationTarget(cardToken, merchant.card.url, parent)
+					: merchant.card.url +
+							"/card/" +
+							cardToken.card +
+							"/verification?mode=iframe&merchant=" +
+							(merchant.card.id ?? merchant.sub) +
+							"&parent=" +
+							encodeURIComponent(parent),
 				paymentType,
-				threeDSServerTransID
+				transactionId
 			),
 			cardToken.token
 		)
 		if (logFunction)
-			logFunction("ch3d2.auth", "trace", { token: cardToken.token, response: authResponse })
-		if (gracely.Error.is(authResponse))
-			result = authResponse
-		else if (api.Error.is(authResponse))
-			result = gracely.server.backendFailure("ch3d2.verify auth responsed with error code:", authResponse.errorCode)
-		else if (api.auth.Response.is(authResponse))
+			logFunction("ch3d2.auth", "trace", { token: cardToken.token, response: response })
+		if (gracely.Error.is(response))
+			result = response
+		else if (api.Error.is(response))
+			result = gracely.server.backendFailure("ch3d2.verify auth responsed with error code:", response.errorCode)
+		else if (api.auth.Response.is(response))
 			result =
-				authResponse.transStatus == "Y" || authResponse.transStatus == "A"
-					? model.PaymentVerifier.Response.verified()
-					: authResponse.transStatus == "C"
-					? model.PaymentVerifier.Response.verificationRequired(true, "POST", authResponse.acsURL ?? "", {
+				response.transStatus == "Y" || response.transStatus == "A"
+					? model.PaymentVerifier.Response.verified(response.payfunc?.token)
+					: response.transStatus == "C"
+					? model.PaymentVerifier.Response.verificationRequired(true, "POST", response.acsURL ?? "", {
 							type: "challenge",
-							threeDSServerTransID: authResponse.threeDSServerTransID,
-							acsTransID: authResponse.acsTransID,
-							messageVersion: authResponse.messageVersion,
+							threeDSServerTransID: response.threeDSServerTransID,
+							acsTransID: response.acsTransID,
+							messageVersion: response.messageVersion,
 							messageType: "CReq",
 							challengeWindowSize: "01",
 					  })

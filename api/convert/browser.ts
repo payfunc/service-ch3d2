@@ -8,6 +8,7 @@ export function convertBrowser(
 	let result: Partial<AuthRequest> = {
 		browserColorDepth: browser?.colorDepth ? getColorDepth(browser.colorDepth) : "24",
 		browserJavaEnabled: browser?.java ?? false,
+		browserJavascriptEnabled: browser?.javascript ?? true,
 		browserLanguage: browser?.locale ?? "en-US",
 		browserScreenHeight: getHeight(browser),
 		browserScreenWidth: getWidth(browser),
@@ -16,11 +17,6 @@ export function convertBrowser(
 				? browser.timezone.toString()
 				: "+0000",
 	}
-	if (messageVersion && messageVersion != "2.1.0")
-		result = {
-			...result,
-			browserJavascriptEnabled: browser?.javascript ?? true,
-		}
 	if (model.Browser.is(browser)) {
 		if (browser.acceptHeader)
 			result = { ...result, browserAcceptHeader: browser.acceptHeader }

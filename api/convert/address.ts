@@ -19,7 +19,6 @@ export function convertAddress(input: model.Address | model.Addresses): Partial<
 		billAddrLine2: model.Address.General.is(billingAddress) && billingAddress.address2 ? billingAddress.address2 : "",
 		billAddrLine3: model.Address.General.is(billingAddress) && billingAddress.address3 ? billingAddress.address3 : "",
 		billAddrPostCode: billingAddress.zipCode,
-		billAddrState: typeof (billingAddress as any).state == "string" ? (billingAddress as any).state : "",
 	}
 	result = {
 		...result,
@@ -33,7 +32,6 @@ export function convertAddress(input: model.Address | model.Addresses): Partial<
 		shipAddrLine3:
 			model.Address.General.is(deliveryAddress) && deliveryAddress.address3 ? deliveryAddress.address3 : "",
 		shipAddrPostCode: deliveryAddress.zipCode,
-		shipAddrState: typeof (deliveryAddress as any).state == "string" ? (deliveryAddress as any).state : "",
 	}
 	return AuthRequest.limit(result)
 }

@@ -1,6 +1,6 @@
 {
 	"name": "@payfunc/service-ch3d2",
-	"version": "0.0.36",
+	"version": "0.0.37",
 	"description": "Service library for using emv3d2.",
 	"author": "PayFunc",
 	"license": "MIT",

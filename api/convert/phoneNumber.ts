@@ -23,7 +23,7 @@ function extractPhoneNumber(
 	address?: model.Address | model.Addresses
 ): api.model.PhoneNumber | undefined {
 	let result: api.model.PhoneNumber | undefined
-	const phone = model.PhoneNumbers.get(email, type)
+	const phone = model.PhoneNumbers.get(email, type)?.replace(/\s+/, "")
 	const mainAddress = model.Addresses.is(address)
 		? address.primary ?? address.billing ?? address.delivery ?? address.visit
 		: address

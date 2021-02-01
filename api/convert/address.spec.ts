@@ -41,14 +41,12 @@ describe("address tests", () => {
 			billAddrLine2: "row",
 			billAddrLine3: "row",
 			billAddrPostCode: "12345",
-			billAddrState: "",
 			shipAddrCity: "city",
 			shipAddrCountry: "752",
 			shipAddrLine1: "Vägvägen 1",
 			shipAddrLine2: "row",
 			shipAddrLine3: "row",
 			shipAddrPostCode: "12345",
-			shipAddrState: "",
 		})
 	})
 	it("address matching 2", () => {
@@ -80,14 +78,12 @@ describe("address tests", () => {
 			billAddrLine2: "",
 			billAddrLine3: "",
 			billAddrPostCode: "12345",
-			billAddrState: "",
 			shipAddrCity: "city",
 			shipAddrCountry: "276",
 			shipAddrLine1: "Road 1",
 			shipAddrLine2: "",
 			shipAddrLine3: "",
 			shipAddrPostCode: "12345",
-			shipAddrState: "Bayern",
 		})
 	})
 })

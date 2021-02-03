@@ -3,55 +3,49 @@ import * as model from "@payfunc/model"
 import * as api from "../../../api"
 
 export function generate(
-	request: model.PaymentVerifier.Request,
 	notificationURL: string,
-	paymentType: "card" | "account" | "create account",
-	transactionId: string
+	transactionId: string,
+	amount: number,
+	currency: isoly.Currency,
+	type: "create account" | "account" | "card",
+	browser?: model.Browser,
+	customer?: model.Customer
 ): api.auth.Request {
 	let authRequest: api.auth.Request = {
 		deviceChannel: "02",
-		messageCategory: paymentType != "create account" ? "01" : "02",
+		messageCategory: type != "create account" ? "01" : "02",
 		messageType: "AReq",
 		messageVersion: "2.1.0",
 		threeDSRequestorURL: "https://payfunc.com/about/contact/",
 		threeDSServerTransID: transactionId,
 		threeDSRequestorAuthenticationInd:
-			paymentType == "account"
+			type == "account"
 				? "02" // Recurring transaction
-				: paymentType == "create account"
+				: type == "create account"
 				? "04" // Add card
 				: "01",
 		threeDSCompInd: "Y",
 		transType: "01",
 	}
-	if (paymentType != "create account") {
-		const decimals = isoly.Currency.decimalDigits(request.currency) ?? 0
-		const amount = Math.round(
-			model.Item.amount(request.payment.type == "card" ? request.payment.amount ?? request.items : request.items) *
-				10 ** decimals
-		)
-		authRequest.purchaseAmount = amount.toString()
-		authRequest.purchaseCurrency = isoly.CurrencyCode.from(request.currency)
+	if (type != "create account") {
+		const decimals = isoly.Currency.decimalDigits(currency) ?? 0
+		authRequest.purchaseAmount = Math.round(amount * 10 ** decimals).toString()
+		authRequest.purchaseCurrency = isoly.CurrencyCode.from(currency)
 		authRequest.purchaseExponent = decimals.toString()
 		authRequest.purchaseDate = api.model.PreciseTime.from(isoly.DateTime.now())
-		if (paymentType == "card" && authRequest.deviceChannel != "03")
+		if (type == "card" && authRequest.deviceChannel != "03")
 			authRequest.threeDSRequestorChallengeInd = "04" // "04" - We require challenge as auth is only run when additional verification is required.
 	} else
 		authRequest.threeDSRequestorChallengeInd = "04" // "04" - We require challenge when creating an account.
-	authRequest = appendCustomerData(request.customer, authRequest)
-	if (
-		request.payment.type == "card" &&
-		model.Payment.Card.Creatable.is(request.payment) &&
-		request.payment.client?.browser
-	)
+	authRequest = appendCustomerData(customer, authRequest)
+	if (browser)
 		authRequest = {
 			...authRequest,
-			...api.convert.convertBrowser(request.payment.client.browser, authRequest.messageVersion),
+			...api.convert.convertBrowser(browser, authRequest.messageVersion),
 			notificationURL,
 		}
 	return authRequest
 }
-
 function appendCustomerData(customer: model.Customer | undefined, authRequest: api.auth.Request) {
 	if (customer) {
 		if (customer.address)

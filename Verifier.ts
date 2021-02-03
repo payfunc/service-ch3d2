@@ -125,7 +125,6 @@ export class Verifier extends model.PaymentVerifier {
 			key,
 			merchant,
 			api.auth.Request.generate(
-				request,
 				card.Card.Token.is(cardToken)
 					? card.Card.Token.getVerificationTarget(cardToken, merchant.card.url, parent)
 					: merchant.card.url +
@@ -135,8 +134,10 @@ export class Verifier extends model.PaymentVerifier {
 							(merchant.card.id ?? merchant.sub) +
 							"&parent=" +
 							encodeURIComponent(parent),
-				paymentType,
-				transactionId
+				transactionId,
+				model.Item.amount(request.payment.type == "card" ? request.payment.amount ?? request.items : request.items),
+				request.currency,
+				paymentType
 			),
 			cardToken.token
 		)

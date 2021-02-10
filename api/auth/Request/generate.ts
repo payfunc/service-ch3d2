@@ -51,7 +51,9 @@ function appendCustomerData(customer: model.Customer | undefined, authRequest: a
 		if (customer.address)
 			authRequest = { ...authRequest, ...api.convert.convertAddress(customer.address) }
 		if (customer.email) {
-			const email = model.EmailAddresses.get(customer.email, "primary", "billing")
+			const email = model.EmailAddresses.get(customer.email)?.match(
+				"^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+.[a-zA-Z0-9-.]+$"
+			)?.[0]
 			if (email)
 				authRequest.email = email
 		}

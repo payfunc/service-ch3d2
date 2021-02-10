@@ -17,13 +17,13 @@ export function convertPhone(
 	return authRequest
 }
 
-function extractPhoneNumber(
-	email: string | model.EmailAddresses | undefined,
+export function extractPhoneNumber(
+	phone: string | model.PhoneNumbers | undefined,
 	type: model.PhoneNumbers.Type,
 	address?: model.Address | model.Addresses
 ): api.model.PhoneNumber | undefined {
 	let result: api.model.PhoneNumber | undefined
-	const phone = model.PhoneNumbers.get(email, type)?.replace(/\s+/g, "")
+	const parsed = model.PhoneNumbers.get(phone, type)?.replace(/([^\d+])+/g, "")
 	const mainAddress = model.Addresses.is(address)
 		? address.primary ?? address.billing ?? address.delivery ?? address.visit
 		: address
@@ -32,8 +32,8 @@ function extractPhoneNumber(
 			? mainAddress.countryCode
 			: "SE"
 		: "SE"
-	if (phone) {
-		const split = isoly.CallingCode.seperate(phone)
+	if (parsed) {
+		const split = isoly.CallingCode.seperate(parsed)
 		if (split[0] == undefined)
 			split[0] = isoly.CallingCode.from(countryCode)
 		result = { cc: (split[0] ?? "+46").replace("+", ""), subscriber: split[1] }

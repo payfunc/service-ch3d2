@@ -12,9 +12,9 @@ export function convertBrowser(
 		browserScreenHeight: getHeight(browser),
 		browserScreenWidth: getWidth(browser),
 		browserTZ:
-			browser?.timezone && browser.timezone.toString().match(/^[+-]?[0-9]{1,4}$/)
+			browser?.timezone != undefined && browser.timezone.toString().match(/^[+-]?[0-9]{1,4}$/)
 				? browser.timezone.toString()
-				: "+0000",
+				: "0",
 		browserJavascriptEnabled: browser?.javascript ?? true,
 	}
 	if (model.Browser.is(browser)) {

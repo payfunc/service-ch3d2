@@ -2,14 +2,14 @@ import * as gracely from "gracely"
 import * as authly from "authly"
 import * as model from "@payfunc/model"
 import * as api from "./api"
-import { Verifier } from "./Verifier"
 
 async function preauth(
 	key: authly.Token,
 	merchant: model.Key,
-	token: authly.Token
+	token: authly.Token,
+	id: authly.Identifier
 ): Promise<api.preauth.Response | api.Error | gracely.Error> {
-	return !merchant.card ? gracely.client.unauthorized() : api.preauth.post({ url: merchant.card.url, key }, token)
+	return !merchant.card ? gracely.client.unauthorized() : api.preauth.post({ url: merchant.card.url, key }, token, id)
 }
 
 async function auth(
@@ -32,4 +32,4 @@ async function postauth(
 		: api.postauth.post({ url: merchant.card.url, key }, request, token)
 }
 
-export { api, preauth, auth, postauth, Verifier }
+export { api, preauth, auth, postauth }

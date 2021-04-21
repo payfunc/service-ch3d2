@@ -16,20 +16,24 @@ async function auth(
 	key: authly.Token,
 	merchant: model.Key,
 	request: api.auth.Request,
-	token: authly.Token
+	token: authly.Token,
+	id: authly.Identifier
 ): Promise<api.auth.Response | api.Error | gracely.Error> {
-	return !merchant.card ? gracely.client.unauthorized() : api.auth.post({ url: merchant.card.url, key }, request, token)
+	return !merchant.card
+		? gracely.client.unauthorized()
+		: api.auth.post({ url: merchant.card.url, key }, request, token, id)
 }
 
 async function postauth(
 	key: authly.Token,
 	merchant: model.Key,
 	request: api.postauth.Request,
-	token: authly.Token
+	token: authly.Token,
+	id: authly.Identifier
 ): Promise<api.postauth.Response | api.Error | gracely.Error> {
 	return !merchant.card
 		? gracely.client.unauthorized()
-		: api.postauth.post({ url: merchant.card.url, key }, request, token)
+		: api.postauth.post({ url: merchant.card.url, key }, request, token, id)
 }
 
 export { api, preauth, auth, postauth }

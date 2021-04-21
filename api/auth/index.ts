@@ -10,10 +10,11 @@ import { Response } from "./Response"
 async function post(
 	configuration: Configuration,
 	request: Request,
-	token: authly.Token
+	token: authly.Token,
+	id: authly.Identifier
 ): Promise<Response | Error | gracely.Error> {
 	const path = (await card.Card.Token.verify(token)) ? `card/ch3d2/${token}/` : `card/${token}/ch3d2/`
-	return connection.post<Request, Response | Error | gracely.Error>(configuration, path + `auth`, request)
+	return connection.post<Request, Response | Error | gracely.Error>(configuration, path + `auth`, request, id)
 }
 
 export { Request, Response, post }

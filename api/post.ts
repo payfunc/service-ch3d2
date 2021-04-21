@@ -8,7 +8,7 @@ export async function post<Request, Response>(
 	request: Request,
 	id: authly.Identifier
 ): Promise<Response> {
-	const response = await fetch(configuration.url + "/" + endpoint + "&id=" + encodeURIComponent(id), {
+	const response = await fetch(configuration.url + "/" + endpoint + "?id=" + encodeURIComponent(id), {
 		method: "POST",
 		headers: { "Content-Type": "application/json; charset=utf-8", authorization: "Bearer " + configuration.key },
 		body: JSON.stringify(request),

@@ -6,7 +6,7 @@ export interface Response {
 	challengeCompletionInd?: "Y" | "N"
 	messageExtension?: MessageExtension | MessageExtension[]
 	messageType: "CRes"
-	messageVersion: "2.1.0" | "2.2.0" | string
+	messageVersion: "2.1.0" | "2.2.0"
 	sdkTransID?: string
 	threeDSServerTransID: string
 	transStatus?: "Y" | "N"

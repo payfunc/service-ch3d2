@@ -4,7 +4,7 @@ import * as api from "../../../api"
 
 export function generate(
 	notificationURL: string,
-	transactionId: string,
+	methodResult: api.MethodResult,
 	amount: number,
 	currency: isoly.Currency,
 	type: "create account" | "account" | "card",
@@ -15,16 +15,16 @@ export function generate(
 		deviceChannel: "02",
 		messageCategory: type != "create account" ? "01" : "02",
 		messageType: "AReq",
-		messageVersion: "2.1.0",
+		messageVersion: methodResult.messageVersion,
 		threeDSRequestorURL: "https://payfunc.com/about/contact/",
-		threeDSServerTransID: transactionId,
+		threeDSServerTransID: methodResult.threeDSServerTransID,
 		threeDSRequestorAuthenticationInd:
 			type == "account"
 				? "02" // Recurring transaction
 				: type == "create account"
 				? "04" // Add card
 				: "01",
-		threeDSCompInd: "Y",
+		threeDSCompInd: methodResult.threeDSCompInd,
 		transType: "01",
 	}
 	if (type != "create account") {

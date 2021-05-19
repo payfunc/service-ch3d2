@@ -468,7 +468,9 @@ export namespace Request {
 									property: "browserAcceptHeader",
 									type: "string | undefined",
 								},
-							(value.deviceChannel != "02" && value.browserAcceptHeader == undefined) ||
+							(value.deviceChannel != "02" &&
+								value.browserColorDepth == undefined &&
+								value.browserJavascriptEnabled != true) ||
 								(typeof value.browserColorDepth == "string" &&
 									["1", "4", "8", "15", "16", "24", "32", "48"].includes(value.browserColorDepth)) || {
 									property: "browserColorDepth",
@@ -479,7 +481,9 @@ export namespace Request {
 									property: "browserIP",
 									type: "string | undefined",
 								},
-							(value.deviceChannel != "02" && value.browserJavaEnabled == undefined) ||
+							(value.deviceChannel != "02" &&
+								value.browserJavaEnabled == undefined &&
+								value.browserJavascriptEnabled != true) ||
 								typeof value.browserJavaEnabled == "boolean" || {
 									property: "browserJavaEnabled",
 									type: "boolean | undefined",
@@ -493,17 +497,21 @@ export namespace Request {
 								(typeof value.browserLanguage == "string" &&
 									value.browserLanguage.length >= 1 &&
 									value.browserLanguage.length <= 8) || { property: "browserLanguage", type: "string | undefined" },
-							(value.deviceChannel != "02" && value.browserScreenHeight == undefined) ||
+							(value.deviceChannel != "02" &&
+								value.browserScreenHeight == undefined &&
+								value.browserJavascriptEnabled != true) ||
 								(typeof value.browserScreenHeight == "string" && /^[0-9]{1,6}$/.test(value.browserScreenHeight)) || {
 									property: "browserScreenHeight",
 									type: "string | undefined",
 								},
-							(value.deviceChannel != "02" && value.browserScreenWidth == undefined) ||
+							(value.deviceChannel != "02" &&
+								value.browserScreenWidth == undefined &&
+								value.browserJavascriptEnabled != true) ||
 								(typeof value.browserScreenWidth == "string" && /^[0-9]{1,6}$/.test(value.browserScreenWidth)) || {
 									property: "browserScreenWidth",
 									type: "string | undefined",
 								},
-							(value.deviceChannel != "02" && value.browserTZ == undefined) ||
+							(value.deviceChannel != "02" && value.browserTZ == undefined && value.browserJavascriptEnabled != true) ||
 								(typeof value.browserTZ == "string" && /^[+-]?[0-9]{1,4}$/.test(value.browserTZ)) || {
 									property: "browserTZ",
 									type: "string | undefined",
@@ -580,39 +588,49 @@ export namespace Request {
 									property: "notificationURL",
 									type: "string | undefined",
 								},
-							(value.messageCategory == "02" &&
+							(((value.messageCategory == "02" &&
 								value.threeDSRequestorAuthenticationInd != "02" &&
 								value.threeDSRequestorAuthenticationInd != "03" &&
+								!["01", "02", "06", "07", "08", "09", "11"].includes(value.threeRIInd)) ||
+								value.messageCategory != "01") &&
 								value.purchaseAmount == undefined) ||
 								(typeof value.purchaseAmount == "string" && /^\d{0,48}$/.test(value.purchaseAmount)) || {
 									property: "purchaseAmount",
 									type: "string | undefined",
 								},
-							(value.messageCategory == "02" &&
+							(((value.messageCategory == "02" &&
 								value.threeDSRequestorAuthenticationInd != "02" &&
 								value.threeDSRequestorAuthenticationInd != "03" &&
+								!["01", "02", "06", "07", "08", "09", "11"].includes(value.threeRIInd)) ||
+								value.messageCategory != "01") &&
 								value.purchaseCurrency == undefined) ||
 								Currency.is(value.purchaseCurrency) || {
 									property: "purchaseCurrency",
 									type: "api.model.Currency | undefined",
 								},
-							(value.messageCategory == "02" &&
+							(((value.messageCategory == "02" &&
 								value.threeDSRequestorAuthenticationInd != "02" &&
 								value.threeDSRequestorAuthenticationInd != "03" &&
+								!["01", "02", "06", "07", "08", "09", "11"].includes(value.threeRIInd)) ||
+								value.messageCategory != "01") &&
 								value.purchaseDate == undefined) ||
 								PreciseTime.is(value.purchaseDate) || {
 									property: "purchaseDate",
 									type: "api.model.PreciseTime | undefined",
 								},
-							(value.messageCategory == "02" &&
+							(((value.messageCategory == "02" &&
 								value.threeDSRequestorAuthenticationInd != "02" &&
 								value.threeDSRequestorAuthenticationInd != "03" &&
+								!["01", "02", "06", "07", "08", "09", "11"].includes(value.threeRIInd)) ||
+								value.messageCategory != "01") &&
 								value.purchaseExponent == undefined) ||
 								(typeof value.purchaseExponent == "string" && /^\d$/.test(value.purchaseExponent)) || {
 									property: "purchaseExponent",
 									type: "string | undefined",
 								},
-							(value.threeDSRequestorAuthenticationInd != "03" && value.purchaseInstalData == undefined) ||
+							(value.threeDSRequestorAuthenticationInd != "03" &&
+								value.threeRIInd != "02" &&
+								value.purchaseInstalData == undefined) ||
 								(typeof value.purchaseInstalData == "string" &&
 									value.purchaseInstalData.length <= 3 &&
 									/(^(\d\d|\d\d\d)$)|(^[2-9]$)/.test(value.purchaseInstalData)) || {
@@ -623,10 +641,12 @@ export namespace Request {
 								value.payTokenInd == true || { property: "payTokenInd", type: "true | undefined" },
 							(value.threeDSRequestorAuthenticationInd != "02" &&
 								value.threeDSRequestorAuthenticationInd != "03" &&
+								!["01", "02"].includes(value.threeRIInd) &&
 								value.recurringExpiry == undefined) ||
 								Date.is(value.recurringExpiry) || { property: "recurringExpiry", type: "api.model.Date | undefined" },
 							(value.threeDSRequestorAuthenticationInd != "02" &&
 								value.threeDSRequestorAuthenticationInd != "03" &&
+								!["01", "02"].includes(value.threeRIInd) &&
 								value.recurringFrequency == undefined) ||
 								(typeof value.recurringFrequency == "string" && /^\d{0,4}$/.test(value.recurringFrequency)) || {
 									property: "recurringFrequency",
@@ -707,7 +727,7 @@ export namespace Request {
 									type: "api.model.ThreeDSRequestorAuthenticationInfo | undefined",
 								},
 							value.threeDSRequestorChallengeInd == undefined ||
-								/^(0[1-4]|[89][0-9])$/.test(value.threeDSRequestorChallengeInd) || {
+								/^(0[1-9]|[89][0-9])$/.test(value.threeDSRequestorChallengeInd) || {
 									property: "threeDSRequestorChallengeInd",
 									type: "string | undefined",
 								},
@@ -722,7 +742,7 @@ export namespace Request {
 							},
 							typeof value.threeDSServerTransID == "string" || { property: "threeDSServerTransID", type: "string" },
 							(value.deviceChannel != "03" && value.threeRIInd == undefined) ||
-								(typeof value.threeRIInd == "string" && /^(0[1-5]|[89][0-9])$/.test(value.threeRIInd)) || {
+								(typeof value.threeRIInd == "string" && /^(0[1-9]|1[0-2]|[89][0-9])$/.test(value.threeRIInd)) || {
 									property: "threeRIInd",
 									type: "string | undefined",
 								},

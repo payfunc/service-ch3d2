@@ -1,6 +1,5 @@
 import * as gracely from "gracely"
 import * as isoly from "isoly"
-import { isIPv4, isIPv6 } from "net"
 import { AcctInfo } from "../../model/AcctInfo"
 import { Currency } from "../../model/Currency"
 import { Date } from "../../model/Date"
@@ -111,6 +110,11 @@ export interface Request {
 		| "02"
 		| "03"
 		| "04"
+		| "05"
+		| "06"
+		| "07"
+		| "08"
+		| "09"
 		| "80"
 		| "81"
 		| "82"
@@ -141,6 +145,12 @@ export interface Request {
 		| "03"
 		| "04"
 		| "05"
+		| "06"
+		| "07"
+		| "08"
+		| "09"
+		| "10"
+		| "11"
 		| "80"
 		| "81"
 		| "82"
@@ -230,14 +240,15 @@ export namespace Request {
 				(typeof value.billAddrState == "string" && value.billAddrState.length <= 3)) &&
 			((value.deviceChannel != "02" && value.browserAcceptHeader == undefined) ||
 				(typeof value.browserAcceptHeader == "string" && value.browserAcceptHeader.length <= 2048)) &&
-			((value.deviceChannel != "02" && value.browserAcceptHeader == undefined) ||
+			((value.deviceChannel != "02" &&
+				value.browserColorDepth == undefined &&
+				value.browserJavascriptEnabled != true) ||
 				(typeof value.browserColorDepth == "string" &&
 					["1", "4", "8", "15", "16", "24", "32", "48"].includes(value.browserColorDepth))) &&
-			(value.browserIP == undefined ||
-				(typeof value.browserIP == "string" &&
-					value.browserIP.length <= 45 &&
-					(isIPv4(value.browserIP) || isIPv6(value.browserIP)))) &&
-			((value.deviceChannel != "02" && value.browserJavaEnabled == undefined) ||
+			(value.browserIP == undefined || (typeof value.browserIP == "string" && value.browserIP.length <= 45)) &&
+			((value.deviceChannel != "02" &&
+				value.browserJavaEnabled == undefined &&
+				value.browserJavascriptEnabled != true) ||
 				typeof value.browserJavaEnabled == "boolean") &&
 			((value.deviceChannel != "02" && value.browserJavascriptEnabled == undefined) ||
 				typeof value.browserJavascriptEnabled == "boolean") &&
@@ -245,11 +256,15 @@ export namespace Request {
 				(typeof value.browserLanguage == "string" &&
 					value.browserLanguage.length >= 1 &&
 					value.browserLanguage.length <= 8)) &&
-			((value.deviceChannel != "02" && value.browserScreenHeight == undefined) ||
+			((value.deviceChannel != "02" &&
+				value.browserScreenHeight == undefined &&
+				value.browserJavascriptEnabled != true) ||
 				(typeof value.browserScreenHeight == "string" && /^[0-9]{1,6}$/.test(value.browserScreenHeight))) &&
-			((value.deviceChannel != "02" && value.browserScreenWidth == undefined) ||
+			((value.deviceChannel != "02" &&
+				value.browserScreenWidth == undefined &&
+				value.browserJavascriptEnabled != true) ||
 				(typeof value.browserScreenWidth == "string" && /^[0-9]{1,6}$/.test(value.browserScreenWidth))) &&
-			((value.deviceChannel != "02" && value.browserTZ == undefined) ||
+			((value.deviceChannel != "02" && value.browserTZ == undefined && value.browserJavascriptEnabled != true) ||
 				(typeof value.browserTZ == "string" && /^[+-]?[0-9]{1,4}$/.test(value.browserTZ))) &&
 			((value.deviceChannel != "02" && value.browserUserAgent == undefined) ||
 				(typeof value.browserUserAgent == "string" && value.browserUserAgent.length <= 2048)) &&
@@ -282,37 +297,49 @@ export namespace Request {
 			(value.mobilePhone == undefined || PhoneNumber.is(value.mobilePhone)) &&
 			((value.deviceChannel != "02" && value.notificationURL == undefined) ||
 				(typeof value.notificationURL == "string" && value.notificationURL.length <= 256)) &&
-			((value.messageCategory == "02" &&
+			((((value.messageCategory == "02" &&
 				value.threeDSRequestorAuthenticationInd != "02" &&
 				value.threeDSRequestorAuthenticationInd != "03" &&
+				!["01", "02", "06", "07", "08", "09", "11"].includes(value.threeRIInd)) ||
+				value.messageCategory != "01") &&
 				value.purchaseAmount == undefined) ||
 				(typeof value.purchaseAmount == "string" && /^\d{0,48}$/.test(value.purchaseAmount))) &&
-			((value.messageCategory == "02" &&
+			((((value.messageCategory == "02" &&
 				value.threeDSRequestorAuthenticationInd != "02" &&
 				value.threeDSRequestorAuthenticationInd != "03" &&
+				!["01", "02", "06", "07", "08", "09", "11"].includes(value.threeRIInd)) ||
+				value.messageCategory != "01") &&
 				value.purchaseCurrency == undefined) ||
 				Currency.is(value.purchaseCurrency)) &&
-			((value.messageCategory == "02" &&
+			((((value.messageCategory == "02" &&
 				value.threeDSRequestorAuthenticationInd != "02" &&
 				value.threeDSRequestorAuthenticationInd != "03" &&
+				!["01", "02", "06", "07", "08", "09", "11"].includes(value.threeRIInd)) ||
+				value.messageCategory != "01") &&
 				value.purchaseDate == undefined) ||
 				PreciseTime.is(value.purchaseDate)) &&
-			((value.messageCategory == "02" &&
+			((((value.messageCategory == "02" &&
 				value.threeDSRequestorAuthenticationInd != "02" &&
 				value.threeDSRequestorAuthenticationInd != "03" &&
+				!["01", "02", "06", "07", "08", "09", "11"].includes(value.threeRIInd)) ||
+				value.messageCategory != "01") &&
 				value.purchaseExponent == undefined) ||
 				(typeof value.purchaseExponent == "string" && /^\d$/.test(value.purchaseExponent))) &&
-			((value.threeDSRequestorAuthenticationInd != "03" && value.purchaseInstalData == undefined) ||
+			((value.threeDSRequestorAuthenticationInd != "03" &&
+				value.threeRIInd != "02" &&
+				value.purchaseInstalData == undefined) ||
 				(typeof value.purchaseInstalData == "string" &&
 					value.purchaseInstalData.length <= 3 &&
 					/(^(\d\d|\d\d\d)$)|(^[2-9]$)/.test(value.purchaseInstalData))) &&
 			(value.payTokenInd == undefined || value.payTokenInd == true) &&
 			((value.threeDSRequestorAuthenticationInd != "02" &&
 				value.threeDSRequestorAuthenticationInd != "03" &&
+				!["01", "02"].includes(value.threeRIInd) &&
 				value.recurringExpiry == undefined) ||
 				Date.is(value.recurringExpiry)) &&
 			((value.threeDSRequestorAuthenticationInd != "02" &&
 				value.threeDSRequestorAuthenticationInd != "03" &&
+				!["01", "02"].includes(value.threeRIInd) &&
 				value.recurringFrequency == undefined) ||
 				(typeof value.recurringFrequency == "string" && /^\d{0,4}$/.test(value.recurringFrequency))) &&
 			((value.deviceChannel != "01" && value.sdkAppID == undefined) || typeof value.sdkAppID == "string") &&
@@ -350,14 +377,14 @@ export namespace Request {
 			(value.threeDSRequestorAuthenticationInfo == undefined ||
 				ThreeDSRequestorAuthenticationInfo.is(value.threeDSRequestorAuthenticationInfo)) &&
 			(value.threeDSRequestorChallengeInd == undefined ||
-				/^(0[1-4]|[89][0-9])$/.test(value.threeDSRequestorChallengeInd)) &&
+				/^(0[1-9]|[89][0-9])$/.test(value.threeDSRequestorChallengeInd)) &&
 			(value.threeDSRequestorPriorAuthenticationInfo == undefined ||
 				ThreeDSRequestorPriorAuthenticationInfo.is(value.threeDSRequestorPriorAuthenticationInfo)) &&
 			typeof value.threeDSRequestorURL == "string" &&
 			value.threeDSRequestorURL.length <= 2048 &&
 			typeof value.threeDSServerTransID == "string" &&
 			((value.deviceChannel != "03" && value.threeRIInd == undefined) ||
-				(typeof value.threeRIInd == "string" && /^(0[1-5]|[89][0-9])$/.test(value.threeRIInd))) &&
+				(typeof value.threeRIInd == "string" && /^(0[1-9]|1[0-2]|[89][0-9])$/.test(value.threeRIInd))) &&
 			(value.transType == undefined ||
 				value.transType == "01" ||
 				value.transType == "03" ||
@@ -448,9 +475,7 @@ export namespace Request {
 									type: '"1" | "4" | "8" | "15" | "16" | "24" | "32" | "48" | undefined',
 								},
 							value.browserIP == undefined ||
-								(typeof value.browserIP == "string" &&
-									value.browserIP.length <= 45 &&
-									(isIPv4(value.browserIP) || isIPv6(value.browserIP))) || {
+								(typeof value.browserIP == "string" && value.browserIP.length <= 45) || {
 									property: "browserIP",
 									type: "string | undefined",
 								},

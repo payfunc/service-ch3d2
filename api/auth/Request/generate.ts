@@ -15,16 +15,16 @@ export function generate(
 		deviceChannel: "02",
 		messageCategory: type != "create account" ? "01" : "02",
 		messageType: "AReq",
-		messageVersion: methodResult.messageVersion,
+		messageVersion: methodResult.version,
 		threeDSRequestorURL: "https://payfunc.com/about/contact/",
-		threeDSServerTransID: methodResult.threeDSServerTransID,
+		threeDSServerTransID: methodResult.id,
 		threeDSRequestorAuthenticationInd:
 			type == "account"
 				? "02" // Recurring transaction
 				: type == "create account"
 				? "04" // Add card
 				: "01",
-		threeDSCompInd: methodResult.threeDSCompInd,
+		threeDSCompInd: methodResult.status,
 		transType: "01",
 	}
 	if (type != "create account") {

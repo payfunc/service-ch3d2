@@ -3,34 +3,34 @@ import { Response as PreAuthorizationResponse } from "./preauth/Response"
 
 describe("service.ch3d2.api.MethodResult", () => {
 	const upgradedCompleted: MethodResult = {
-		threeDSServerTransID: "12345678-abcd-ab12-12345678",
-		messageVersion: "2.2.0",
-		threeDSCompInd: "Y",
+		id: "12345678-abcd-ab12-12345678",
+		version: "2.2.0",
+		status: "Y",
 	}
 	const upgradedFailed: MethodResult = {
-		threeDSServerTransID: "12345678-abcd-ab12-12345678",
-		messageVersion: "2.2.0",
-		threeDSCompInd: "N",
+		id: "12345678-abcd-ab12-12345678",
+		version: "2.2.0",
+		status: "N",
 	}
 	const upgradedNoUrl: MethodResult = {
-		threeDSServerTransID: "12345678-abcd-ab12-12345678",
-		messageVersion: "2.2.0",
-		threeDSCompInd: "U",
+		id: "12345678-abcd-ab12-12345678",
+		version: "2.2.0",
+		status: "U",
 	}
 	const completed: MethodResult = {
-		threeDSServerTransID: "12345678-abcd-ab12-12345678",
-		messageVersion: "2.1.0",
-		threeDSCompInd: "Y",
+		id: "12345678-abcd-ab12-12345678",
+		version: "2.1.0",
+		status: "Y",
 	}
 	const failed: MethodResult = {
-		threeDSServerTransID: "12345678-abcd-ab12-12345678",
-		messageVersion: "2.1.0",
-		threeDSCompInd: "N",
+		id: "12345678-abcd-ab12-12345678",
+		version: "2.1.0",
+		status: "N",
 	}
 	const noUrl: MethodResult = {
-		threeDSServerTransID: "12345678-abcd-ab12-12345678",
-		messageVersion: "2.1.0",
-		threeDSCompInd: "U",
+		id: "12345678-abcd-ab12-12345678",
+		version: "2.1.0",
+		status: "U",
 	}
 	it("MethodResult from noUrl #1", () =>
 		expect(

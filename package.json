@@ -56,7 +56,7 @@
 	},
 	"dependencies": {
 		"@payfunc/model": "payfunc/model#rename-account",
-		"@payfunc/model-card": "payfunc/model-card#rename-account",
+		"@payfunc/model-card": "0.2.15",
 		"authly": "^0.2.3",
 		"form-urlencoded": "^4.2.1",
 		"gracely": "^0.1.2",

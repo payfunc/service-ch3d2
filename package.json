@@ -49,7 +49,7 @@
 		"clean": "rm -rf dist node_modules coverage"
 	},
 	"dependencies": {
-		"@payfunc/model": "payfunc/model#rename-account-parity",
+		"@payfunc/model": "0.2.51",
 		"@payfunc/model-card": "0.1.21",
 		"authly": "^0.1.7",
 		"form-urlencoded": "^4.2.1",

@@ -55,7 +55,7 @@
 		"clean": "rm -rf dist node_modules coverage"
 	},
 	"dependencies": {
-		"@payfunc/model": "payfunc/model#rename-account",
+		"@payfunc/model": "0.3.13",
 		"@payfunc/model-card": "0.2.15",
 		"authly": "^0.2.3",
 		"form-urlencoded": "^4.2.1",

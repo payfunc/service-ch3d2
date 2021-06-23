@@ -7,36 +7,36 @@ export function generate(
 	transactionId: string,
 	amount: number,
 	currency: isoly.Currency,
-	type: "create account" | "account" | "card",
+	recurring?: "initial" | "subsequent",
 	browser?: model.Browser,
-	customer?: model.Customer
+	customer?: model.Contact
 ): api.auth.Request {
 	let authRequest: api.auth.Request = {
 		deviceChannel: "02",
-		messageCategory: type != "create account" ? "01" : "02",
+		messageCategory: recurring != "initial" ? "01" : "02",
 		messageType: "AReq",
 		messageVersion: "2.1.0",
 		threeDSRequestorURL: "https://payfunc.com/about/contact/",
 		threeDSServerTransID: transactionId,
 		threeDSRequestorAuthenticationInd:
-			type == "account"
+			recurring == "subsequent"
 				? "02" // Recurring transaction
-				: type == "create account"
+				: recurring == "initial"
 				? "04" // Add card
 				: "01",
 		threeDSCompInd: "Y",
 		transType: "01",
 	}
-	if (type != "create account") {
+	if (recurring != "initial") {
 		const decimals = isoly.Currency.decimalDigits(currency) ?? 0
 		authRequest.purchaseAmount = Math.round(amount * 10 ** decimals).toString()
 		authRequest.purchaseCurrency = isoly.CurrencyCode.from(currency)
 		authRequest.purchaseExponent = decimals.toString()
 		authRequest.purchaseDate = api.model.PreciseTime.from(isoly.DateTime.now())
-		if (type == "card" && authRequest.deviceChannel != "03")
+		if (!recurring && authRequest.deviceChannel != "03")
 			authRequest.threeDSRequestorChallengeInd = "04" // "04" - We require challenge as auth is only run when additional verification is required.
 	} else
-		authRequest.threeDSRequestorChallengeInd = "04" // "04" - We require challenge when creating an account.
+		authRequest.threeDSRequestorChallengeInd = "04" // "04" - We require challenge when creating an customer.
 	authRequest = appendCustomerData(customer, authRequest)
 	if (browser)
 		authRequest = {
@@ -46,7 +46,7 @@ export function generate(
 		}
 	return authRequest
 }
-function appendCustomerData(customer: model.Customer | undefined, authRequest: api.auth.Request) {
+function appendCustomerData(customer: model.Contact | undefined, authRequest: api.auth.Request) {
 	if (customer) {
 		if (customer.address)
 			authRequest = { ...authRequest, ...api.convert.convertAddress(customer.address) }
